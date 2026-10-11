@@ -3,21 +3,12 @@
   "globalPassThroughEnv": ["ENABLE_EXPERIMENTAL_COREPACK"],
   "tasks": {
     "build": {
-      "dependsOn": ["^build"],
+      "dependsOn": [],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "dev": {
       "cache": false,
       "persistent": true
-    },
-    "lint": {
-      "dependsOn": ["^lint"]
-    },
-    "typecheck": {
-      "dependsOn": ["^typecheck"]
-    },
-    "clean": {
-      "cache": false
     }
   }
 }

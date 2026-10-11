@@ -1,0 +1,7 @@
+apps/api
+**/node_modules
+**/.next
+**/dist
+*.zip
+.env
+.env.local
