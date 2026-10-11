@@ -10,6 +10,7 @@
     "strictNullChecks": false,
     "skipLibCheck": true,
     "resolveJsonModule": true,
+    "noEmitOnError": false,
     "outDir": "dist",
     "rootDir": "src",
     "paths": {
