@@ -1,0 +1,230 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String         @id @default(cuid())
+  email         String         @unique
+  name          String
+  passwordHash  String
+  role          String         @default("USER")
+  isActive      Boolean        @default(true)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  activities    ActivityLog[]
+  bots          Bot[]
+  conversations Conversation[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique
+  userId    String
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  userAgent String?
+  ipAddress String?
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+model Cluster {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String   @default("🤖")
+  color       String   @default("#6a8dff")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bots        Bot[]
+
+  @@map("clusters")
+}
+
+model Brain {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  icon        String     @default("🧠")
+  color       String     @default("#39d7e7")
+  config      String?
+  isActive    Boolean    @default(true)
+  isCentral   Boolean    @default(false)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  bots        BotBrain[]
+
+  @@map("brains")
+}
+
+model Bot {
+  id            String              @id @default(cuid())
+  name          String
+  slug          String              @unique
+  description   String?
+  icon          String              @default("🤖")
+  systemPrompt  String
+  temperature   Float               @default(0.7)
+  maxTokens     Int                 @default(1024)
+  model         String              @default("gpt-4o-mini")
+  isActive      Boolean             @default(true)
+  isPremium     Boolean             @default(false)
+  config        String?
+  tools         String              @default("[]")
+  clusterId     String?
+  userId        String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  activities    ActivityLog[]
+  brains        BotBrain[]
+  botChannels   BotChannel[]
+  user          User?               @relation(fields: [userId], references: [id])
+  cluster       Cluster?            @relation(fields: [clusterId], references: [id])
+  connections   ChannelConnection[]
+  conversations Conversation[]
+
+  @@index([clusterId])
+  @@index([userId])
+  @@index([isActive])
+  @@map("bots")
+}
+
+model BotBrain {
+  botId     String
+  brainId   String
+  createdAt DateTime @default(now())
+  brain     Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@id([botId, brainId])
+  @@map("bot_brains")
+}
+
+model Channel {
+  id            String              @id @default(cuid())
+  name          String              @unique
+  slug          String              @unique
+  type          String
+  icon          String              @default("💬")
+  isConnected   Boolean             @default(false)
+  credentials   String?
+  config        String?
+  webhookSecret String?
+  isActive      Boolean             @default(true)
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+  botChannels   BotChannel[]
+  connections   ChannelConnection[]
+  conversations Conversation[]
+
+  @@map("channels")
+}
+
+model BotChannel {
+  botId     String
+  channelId String
+  isActive  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+
+  @@id([botId, channelId])
+  @@map("bot_channels")
+}
+
+model ChannelConnection {
+  id          String   @id @default(cuid())
+  channelId   String
+  botId       String
+  externalId  String?
+  accessToken String?
+  webhookUrl  String?
+  isActive    Boolean  @default(true)
+  metadata    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  bot         Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  channel     Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+
+  @@unique([channelId, botId, externalId])
+  @@index([channelId])
+  @@index([botId])
+  @@index([isActive])
+  @@map("channel_connections")
+}
+
+model ActivityLog {
+  id        String   @id @default(cuid())
+  type      String
+  message   String
+  botId     String?
+  userId    String?
+  metadata  String?
+  createdAt DateTime @default(now())
+  user      User?    @relation(fields: [userId], references: [id])
+  bot       Bot?     @relation(fields: [botId], references: [id])
+
+  @@index([botId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+model Conversation {
+  id        String    @id @default(cuid())
+  botId     String
+  userId    String?
+  channelId String?
+  sessionId String    @unique
+  title     String?
+  isActive  Boolean   @default(true)
+  metadata  String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  channel   Channel?  @relation(fields: [channelId], references: [id])
+  user      User?     @relation(fields: [userId], references: [id])
+  bot       Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  messages  Message[]
+
+  @@index([botId])
+  @@index([userId])
+  @@index([sessionId])
+  @@map("conversations")
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  role           String
+  content        String
+  tokensIn       Int?
+  tokensOut      Int?
+  costUsd        Float?
+  model          String?
+  provider       String?
+  toolCalls      String?
+  toolResults    String?
+  metadata       String?
+  createdAt      DateTime     @default(now())
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+
