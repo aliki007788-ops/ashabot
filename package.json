@@ -1,0 +1,24 @@
+{
+  "name": "bot-platform",
+  "private": true,
+  "version": "0.1.0",
+  "packageManager": "pnpm@9.0.0",
+  "scripts": {
+    "setup": "bash scripts/setup.sh",
+    "start": "bash scripts/start.sh",
+    "stop": "bash scripts/stop.sh",
+    "reset": "bash scripts/reset.sh",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "db:up": "docker compose up -d postgres redis",
+    "db:down": "docker compose down",
+    "db:migrate": "pnpm --filter @bot-platform/api prisma migrate dev",
+    "db:studio": "pnpm --filter @bot-platform/api prisma studio",
+    "db:seed": "pnpm --filter @bot-platform/api prisma db seed"
+  },
+  "devDependencies": {
+    "turbo": "^2.0.0",
+    "typescript": "^5.5.0"
+  }
+}
