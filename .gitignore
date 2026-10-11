@@ -1,0 +1,63 @@
+# === Dependencies ===
+node_modules/
+.pnpm-store/
+
+# === Next.js ===
+.next/
+out/
+build/
+dist/
+
+# === Environment ===
+.env
+.env.local
+.env.*.local
+.env.backup
+*.env.backup
+
+# === Database ===
+*.db
+*.db-journal
+*.db.before_org
+*.sqlite
+*.sqlite3
+
+# === Backups ===
+*.zip
+*.tar.gz
+*.rar
+*-backup/
+src-backup/
+_temp_backup/
+backups/
+_archive/
+*.backup
+
+# === Logs ===
+*.log
+
+# === Turbo ===
+.turbo/
+
+# === OS ===
+.DS_Store
+Thumbs.db
+
+# === IDE ===
+.vscode/
+.idea/
+
+# === Testing ===
+coverage/
+
+# === Temporary Scripts ===
+check-*.cjs
+fix-*.cjs
+cleanup.cjs
+create-*.cjs
+create-*.ts
+update-brand-bot.cjs
+seed-*.cjs
+write-channels.*
+test-ai*.ps1
+fix-channels-routes.js
