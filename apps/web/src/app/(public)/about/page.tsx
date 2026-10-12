@@ -90,7 +90,7 @@ export default function AboutPage() {
               <ul className="space-y-3 text-[var(--text-secondary)] text-sm md:text-base">
                 <li className="flex gap-3">
                   <span className="text-[#6a8dff] shrink-0">◆</span>
-                  <span>۱۳۵ ربات آماده در ۱۸ خوشه تخصصی</span>
+                  <span>۱۹۱ ربات آماده در ۲۷ خوشه تخصصی</span>
                 </li>
                 <li className="flex gap-3">
                   <span className="text-[#6a8dff] shrink-0">◆</span>
