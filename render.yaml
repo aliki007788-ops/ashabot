@@ -17,14 +17,25 @@ services:
         fromDatabase:
           name: ashabot-db
           property: connectionString
-      - key: REDIS_URL
-        value: "redis://localhost:6379"
       - key: JWT_ACCESS_SECRET
         generateValue: true
       - key: JWT_REFRESH_SECRET
         generateValue: true
+      # آدرس دقیق فرانت روی ورسل (چند آدرس را با کاما جدا کنید) یا * برای همه
       - key: CORS_ORIGIN
         value: "*"
+      # آدرس فرانت (برای بازگشت از درگاه پرداخت)
+      - key: FRONTEND_URL
+        sync: false
+      # آدرس عمومی همین API (مثلاً https://ashabot-api.onrender.com)
+      - key: PUBLIC_API_URL
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: ZARINPAL_MERCHANT_ID
+        sync: false
+      - key: ZARINPAL_SANDBOX
+        value: "false"
       - key: OPENAI_API_KEY
         sync: false
       - key: ANTHROPIC_API_KEY
