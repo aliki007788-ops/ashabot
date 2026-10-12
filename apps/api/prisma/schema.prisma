@@ -1,0 +1,597 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ==================== AUTH ====================
+model User {
+  id            String               @id @default(cuid())
+  email         String               @unique
+  name          String
+  passwordHash  String
+  role          String               @default("USER")
+  isActive      Boolean              @default(true)
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  refreshTokens RefreshToken[]
+  bots          Bot[]
+  activities    ActivityLog[]
+  conversations Conversation[]
+  memberships   OrganizationMember[]
+  apiKeys       ApiKey[]
+  ownedOrgs     Organization[]       @relation("OrgOwner")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  tokenHash  String    @unique
+  userId     String
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt  DateTime
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  userAgent  String?
+  ipAddress  String?
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ==================== ORGANIZATION ====================
+model Organization {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  ownerId     String
+  owner       User     @relation("OrgOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+  logo        String?
+  website     String?
+  description String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  members        OrganizationMember[]
+  bots           Bot[]
+  subscription   Subscription?
+  usages         Usage[]
+  apiKeys        ApiKey[]
+  activities     ActivityLog[]
+  clusterOutputs ClusterOutput[]
+
+  @@index([ownerId])
+  @@map("organizations")
+}
+
+model OrganizationMember {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role           String       @default("MEMBER")
+  joinedAt       DateTime     @default(now())
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+  @@map("organization_members")
+}
+
+// ==================== PLANS ====================
+model Plan {
+  id           String   @id @default(cuid())
+  name         String   @unique
+  slug         String   @unique
+  description  String?
+  priceMonthly Int      @default(0)
+  priceYearly  Int      @default(0)
+  currency     String   @default("IRR")
+  maxBots      Int      @default(1)
+  maxMessages  Int      @default(1000)
+  maxTokens    Int      @default(100000)
+  maxMembers   Int      @default(1)
+  maxChannels  Int      @default(1)
+  allowPremium Boolean  @default(false)
+  features     String   @default("[]")
+  isActive     Boolean  @default(true)
+  sortOrder    Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  subscriptions Subscription[]
+
+  @@map("plans")
+}
+
+model Subscription {
+  id             String       @id @default(cuid())
+  organizationId String       @unique
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planId         String
+  plan           Plan         @relation(fields: [planId], references: [id])
+  status         String       @default("ACTIVE")
+  startedAt      DateTime     @default(now())
+  expiresAt      DateTime?
+  canceledAt     DateTime?
+  autoRenew      Boolean      @default(true)
+  paymentMethod  String?
+  lastPaymentId  String?
+  metadata       String?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([planId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Usage {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  period         String
+  messagesCount  Int          @default(0)
+  tokensIn       Int          @default(0)
+  tokensOut      Int          @default(0)
+  costUsd        Float        @default(0)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@unique([organizationId, period])
+  @@index([organizationId])
+  @@map("usages")
+}
+
+model ApiKey {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  keyHash        String       @unique
+  keyPrefix      String
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  scopes         String       @default("[]")
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  isActive       Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([keyHash])
+  @@map("api_keys")
+}
+
+// ==================== BOT PLATFORM ====================
+model Cluster {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String   @default("🤖")
+  color       String   @default("#6a8dff")
+  sortOrder   Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bots        Bot[]
+  outputs     ClusterOutput[]
+  commands    ClusterCommand[]
+
+  @@map("clusters")
+}
+
+model Brain {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  icon        String   @default("🧠")
+  color       String   @default("#39d7e7")
+  config      String?
+  isActive    Boolean  @default(true)
+  isCentral   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  bots        BotBrain[]
+
+  @@map("brains")
+}
+
+model Bot {
+  id             String        @id @default(cuid())
+  name           String
+  slug           String        @unique
+  description    String?
+  icon           String        @default("🤖")
+  systemPrompt   String
+  temperature    Float         @default(0.7)
+  maxTokens      Int           @default(1024)
+  model          String        @default("gpt-4o-mini")
+  isActive       Boolean       @default(true)
+  isPremium      Boolean       @default(false)
+  isTemplate     Boolean       @default(false)
+  config         String?
+  tools          String        @default("[]")
+  clusterId      String?
+  cluster        Cluster?      @relation(fields: [clusterId], references: [id], onDelete: SetNull)
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  brains        BotBrain[]
+  botChannels   BotChannel[]
+  connections   ChannelConnection[]
+  activities    ActivityLog[]
+  conversations Conversation[]
+  runs          BotRun[]
+
+  @@index([clusterId])
+  @@index([userId])
+  @@index([organizationId])
+  @@index([isActive])
+  @@index([isTemplate])
+  @@map("bots")
+}
+
+model BotBrain {
+  botId     String
+  brainId   String
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  brain     Brain    @relation(fields: [brainId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([botId, brainId])
+  @@map("bot_brains")
+}
+
+// ==================== CHANNELS ====================
+model Channel {
+  id            String      @id @default(cuid())
+  name          String      @unique
+  slug          String      @unique
+  type          String
+  icon          String      @default("💬")
+  isConnected   Boolean     @default(false)
+  credentials   String?
+  config        String?
+  webhookSecret String?
+  isActive      Boolean     @default(true)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  botChannels   BotChannel[]
+  conversations Conversation[]
+  connections   ChannelConnection[]
+
+  @@map("channels")
+}
+
+model BotChannel {
+  botId     String
+  channelId String
+  isActive  Boolean  @default(false)
+  bot       Bot      @relation(fields: [botId], references: [id], onDelete: Cascade)
+  channel   Channel  @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@id([botId, channelId])
+  @@map("bot_channels")
+}
+
+model ChannelConnection {
+  id            String    @id @default(cuid())
+  channelId     String
+  channel       Channel   @relation(fields: [channelId], references: [id], onDelete: Cascade)
+  botId         String
+  bot           Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  externalId    String?
+  accessToken   String?
+  webhookUrl    String?
+  isActive      Boolean   @default(true)
+  metadata      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([channelId, botId, externalId])
+  @@index([channelId])
+  @@index([botId])
+  @@index([isActive])
+  @@map("channel_connections")
+}
+
+// ==================== ACTIVITY ====================
+model ActivityLog {
+  id             String        @id @default(cuid())
+  type           String
+  message        String
+  botId          String?
+  bot            Bot?          @relation(fields: [botId], references: [id], onDelete: SetNull)
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  metadata       String?
+  createdAt      DateTime      @default(now())
+
+  @@index([botId])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@map("activity_logs")
+}
+
+// ==================== AI ====================
+model Conversation {
+  id          String    @id @default(cuid())
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  userId      String?
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  channelId   String?
+  channel     Channel?  @relation(fields: [channelId], references: [id], onDelete: SetNull)
+  sessionId   String    @unique
+  title       String?
+  isActive    Boolean   @default(true)
+  status      String    @default("BOT")
+  needsHuman  Boolean   @default(false)
+  handoffReason String?
+  assignedToId  String?
+  contactId   String?
+  metadata    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  messages    Message[]
+
+  @@index([botId])
+  @@index([userId])
+  @@index([sessionId])
+  @@index([status])
+  @@map("conversations")
+}
+
+model Message {
+  id              String       @id @default(cuid())
+  conversationId  String
+  conversation    Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role            String
+  content         String
+  tokensIn        Int?
+  tokensOut       Int?
+  costUsd         Float?
+  model           String?
+  provider        String?
+  toolCalls       String?
+  toolResults     String?
+  metadata        String?
+  createdAt       DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
+  @@map("messages")
+}
+
+// ==================== CLUSTER OPERATIONS ====================
+model ClusterOutput {
+  id             String        @id @default(cuid())
+  clusterId      String
+  cluster        Cluster       @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  type           String
+  title          String
+  description    String?
+  value          Float?
+  unit           String?
+  status         String        @default("SUCCESS")
+  metadata       String?
+  botId          String?
+  createdAt      DateTime      @default(now())
+
+  @@index([clusterId])
+  @@index([organizationId])
+  @@index([createdAt])
+  @@index([type])
+  @@map("cluster_outputs")
+}
+
+model BotRun {
+  id          String    @id @default(cuid())
+  botId       String
+  bot         Bot       @relation(fields: [botId], references: [id], onDelete: Cascade)
+  status      String    @default("IDLE")
+  taskType    String?
+  taskPayload String?
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  durationMs  Int?
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([botId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("bot_runs")
+}
+
+model ClusterCommand {
+  id             String   @id @default(cuid())
+  clusterId      String
+  cluster        Cluster  @relation(fields: [clusterId], references: [id], onDelete: Cascade)
+  organizationId String?
+  userId         String?
+  command        String
+  response       String?
+  status         String   @default("PENDING")
+  metadata       String?
+  createdAt      DateTime @default(now())
+
+  @@index([clusterId])
+  @@index([createdAt])
+  @@map("cluster_commands")
+}
+
+
+// ==================== KNOWLEDGE BASE (RAG) ====================
+model KnowledgeBase {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String?
+  botId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents   KnowledgeDocument[]
+  chunks      KnowledgeChunk[]
+
+  @@index([userId])
+  @@index([botId])
+  @@map("knowledge_bases")
+}
+
+model KnowledgeDocument {
+  id              String        @id @default(cuid())
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  title           String
+  sourceType      String        @default("text")
+  sourceUrl       String?
+  content         String
+  chunkCount      Int           @default(0)
+  createdAt       DateTime      @default(now())
+
+  chunks          KnowledgeChunk[]
+
+  @@index([knowledgeBaseId])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id              String            @id @default(cuid())
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase     @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  idx             Int
+  content         String
+  embedding       String?
+  createdAt       DateTime          @default(now())
+
+  @@index([knowledgeBaseId])
+  @@index([documentId])
+  @@map("knowledge_chunks")
+}
+
+// ==================== CRM ====================
+model Contact {
+  id             String   @id @default(cuid())
+  userId         String?
+  botId          String?
+  conversationId String?
+  name           String?
+  phone          String?
+  email          String?
+  source         String?
+  stage          String   @default("NEW")
+  score          Int      @default(0)
+  tags           String   @default("[]")
+  notes          String?
+  metadata       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stage])
+  @@index([phone])
+  @@map("contacts")
+}
+
+// ==================== BOOKINGS ====================
+model Booking {
+  id            String   @id @default(cuid())
+  userId        String?
+  botId         String?
+  contactId     String?
+  customerName  String
+  customerPhone String?
+  service       String
+  startsAt      DateTime
+  durationMin   Int      @default(30)
+  status        String   @default("PENDING")
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([startsAt])
+  @@map("bookings")
+}
+
+// ==================== PAYMENTS ====================
+model Payment {
+  id          String    @id @default(cuid())
+  userId      String?
+  botId       String?
+  contactId   String?
+  amount      Int
+  description String
+  status      String    @default("PENDING")
+  gateway     String    @default("zarinpal")
+  authority   String?
+  refId       String?
+  purpose     String?
+  metadata    String?
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([authority])
+  @@map("payments")
+}
+
+// ==================== WORKFLOWS ====================
+model Workflow {
+  id           String   @id @default(cuid())
+  userId       String?
+  botId        String?
+  name         String
+  triggerType  String
+  triggerValue String?
+  actions      String   @default("[]")
+  isActive     Boolean  @default(true)
+  runCount     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([botId])
+  @@map("workflows")
+}
+
+// ==================== EVALS ====================
+model EvalCase {
+  id             String   @id @default(cuid())
+  botId          String
+  userId         String?
+  input          String
+  mustContain    String?
+  mustNotContain String?
+  createdAt      DateTime @default(now())
+
+  @@index([botId])
+  @@map("eval_cases")
+}
