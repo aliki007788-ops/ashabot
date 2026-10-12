@@ -98,6 +98,12 @@ export async function buildApp() {
     timestamp: new Date().toISOString(),
   }));
 
+  app.get('/', async () => ({
+    name: 'ashabot-api',
+    status: 'running',
+    health: '/health',
+  }));
+
   // ==================== API ROUTES ====================
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(aiRoutes, { prefix: '/api/ai' });
