@@ -1,0 +1,567 @@
+/**
+ * Channels Routes
+ * مسیرهای API برای مدیریت کانال‌ها و اتصالات
+ * 
+ * @module channels/channels.routes
+ * @version 2.0.0
+ */
+
+import { FastifyInstance, FastifyRequest, FastifyReply } from 'fastify';
+import { ChannelConnectionService } from './channel-connection.service.js';
+import { ChannelRouterService } from './channel-router.service.js';
+import {
+  createConnectionSchema,
+  updateConnectionSchema,
+  sendChannelMessageSchema,
+  listConnectionsQuerySchema,
+  botIdParamSchema,
+  connectionIdParamSchema,
+  broadcastSchema,
+} from './channels.schema.js';
+import {
+  getAdaptersInfo,
+  getSupportedChannels,
+  isSupportedChannel,
+} from './adapters/index.js';
+
+// ==================== ROUTES ====================
+
+export async function channelsRoutes(app: FastifyInstance) {
+  const connectionService = new ChannelConnectionService(app.prisma);
+  const routerService = new ChannelRouterService(app.prisma);
+
+  // ==================== METADATA ====================
+
+  /**
+   * دریافت اطلاعات همه کانال‌های پشتیبانی‌شده
+   * GET /api/channels/types
+   */
+  app.get('/types', async (req, res) => {
+    return {
+      channels: getAdaptersInfo(),
+      supported: getSupportedChannels(),
+    };
+  });
+
+  // ==================== CONNECTIONS ====================
+
+  /**
+   * ایجاد اتصال جدید
+   * POST /api/channels/connections
+   */
+  app.post('/connections', async (req: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const userId = (req.user as any)?.id;
+
+      if (!userId) {
+        return reply.code(401).send({ error: 'احراز هویت لازم است' });
+      }
+
+      const input = createConnectionSchema.parse(req.body);
+
+      // بررسی پشتیبانی از کانال
+      if (!isSupportedChannel(input.channelType)) {
+        return reply.code(400).send({
+          error: `نوع کانال "${input.channelType}" پشتیبانی نمی‌شود`,
+        });
+      }
+
+      // بررسی مالکیت ربات
+      const bot = await app.prisma.bot.findFirst({
+        where: {
+          id: input.botId,
+          userId,
+        },
+      });
+
+      if (!bot) {
+        return reply.code(404).send({ error: 'ربات یافت نشد یا دسترسی ندارید' });
+      }
+
+      const connection = await connectionService.create(input);
+
+      return reply.code(201).send({
+        success: true,
+        connection,
+        message: 'اتصال با موفقیت ایجاد شد',
+      });
+    } catch (error) {
+      app.log.error(error);
+
+      if (error instanceof Error) {
+        return reply.code(400).send({ error: error.message });
+      }
+
+      return reply.code(500).send({ error: 'خطای سرور' });
+    }
+  });
+
+  /**
+   * لیست اتصالات یک ربات
+   * GET /api/channels/connections?botId=xxx
+   */
+  app.get(
+    '/connections',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const query = listConnectionsQuerySchema.parse(req.query);
+
+        // اگر botId مشخص شده، بررسی مالکیت
+        if (query.botId) {
+          const bot = await app.prisma.bot.findFirst({
+            where: { id: query.botId, userId },
+          });
+
+          if (!bot) {
+            return reply.code(404).send({ error: 'ربات یافت نشد' });
+          }
+
+          const connections = await connectionService.listByBot(query.botId);
+
+          return {
+            connections,
+            total: connections.length,
+          };
+        }
+
+        // اگر botId مشخص نشده، همه اتصالات کاربر را برگردان
+        const bots = await app.prisma.bot.findMany({
+          where: { userId },
+          select: { id: true },
+        });
+
+        const botIds = bots.map((b) => b.id);
+
+        const connections = await app.prisma.channelConnection.findMany({
+          where: {
+            botId: { in: botIds },
+            ...(query.isActive !== undefined && { isActive: query.isActive }),
+            ...(query.channelType && {
+              channel: { type: query.channelType },
+            }),
+          },
+          include: {
+            channel: true,
+            bot: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                icon: true,
+              },
+            },
+          },
+          orderBy: { createdAt: 'desc' },
+          skip: (query.page - 1) * query.limit,
+          take: query.limit,
+        });
+
+        return {
+          connections,
+          total: connections.length,
+          page: query.page,
+          limit: query.limit,
+        };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  /**
+   * دریافت یک اتصال
+   * GET /api/channels/connections/:connectionId
+   */
+  app.get(
+    '/connections/:connectionId',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { connectionId } = connectionIdParamSchema.parse(req.params);
+
+        const connection = await app.prisma.channelConnection.findFirst({
+          where: {
+            id: connectionId,
+            bot: { userId },
+          },
+          include: {
+            channel: true,
+            bot: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                icon: true,
+              },
+            },
+          },
+        });
+
+        if (!connection) {
+          return reply.code(404).send({ error: 'اتصال یافت نشد' });
+        }
+
+        return { connection };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  /**
+   * بروزرسانی اتصال
+   * PATCH /api/channels/connections/:connectionId
+   */
+  app.patch(
+    '/connections/:connectionId',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { connectionId } = connectionIdParamSchema.parse(req.params);
+
+        // بررسی مالکیت
+        const existing = await app.prisma.channelConnection.findFirst({
+          where: {
+            id: connectionId,
+            bot: { userId },
+          },
+        });
+
+        if (!existing) {
+          return reply.code(404).send({ error: 'اتصال یافت نشد' });
+        }
+
+        const input = updateConnectionSchema.parse(req.body);
+
+        const connection = await connectionService.update(connectionId, input);
+
+        return {
+          success: true,
+          connection,
+          message: 'اتصال با موفقیت بروزرسانی شد',
+        };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  /**
+   * فعال/غیرفعال کردن اتصال
+   * POST /api/channels/connections/:connectionId/toggle
+   */
+  app.post(
+    '/connections/:connectionId/toggle',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { connectionId } = connectionIdParamSchema.parse(req.params);
+        const { isActive } = req.body as { isActive: boolean };
+
+        // بررسی مالکیت
+        const existing = await app.prisma.channelConnection.findFirst({
+          where: {
+            id: connectionId,
+            bot: { userId },
+          },
+        });
+
+        if (!existing) {
+          return reply.code(404).send({ error: 'اتصال یافت نشد' });
+        }
+
+        const connection = await connectionService.toggleActive(
+          connectionId,
+          isActive
+        );
+
+        return {
+          success: true,
+          connection,
+          message: isActive ? 'اتصال فعال شد' : 'اتصال غیرفعال شد',
+        };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  /**
+   * تست اتصال
+   * POST /api/channels/connections/:connectionId/test
+   */
+  app.post(
+    '/connections/:connectionId/test',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { connectionId } = connectionIdParamSchema.parse(req.params);
+
+        // بررسی مالکیت
+        const existing = await app.prisma.channelConnection.findFirst({
+          where: {
+            id: connectionId,
+            bot: { userId },
+          },
+        });
+
+        if (!existing) {
+          return reply.code(404).send({ error: 'اتصال یافت نشد' });
+        }
+
+        const result = await connectionService.testConnection(connectionId);
+
+        return result;
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  /**
+   * حذف اتصال
+   * DELETE /api/channels/connections/:connectionId
+   */
+  app.delete(
+    '/connections/:connectionId',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { connectionId } = connectionIdParamSchema.parse(req.params);
+
+        // بررسی مالکیت
+        const existing = await app.prisma.channelConnection.findFirst({
+          where: {
+            id: connectionId,
+            bot: { userId },
+          },
+        });
+
+        if (!existing) {
+          return reply.code(404).send({ error: 'اتصال یافت نشد' });
+        }
+
+        await connectionService.delete(connectionId);
+
+        return {
+          success: true,
+          message: 'اتصال با موفقیت حذف شد',
+        };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+
+  // ==================== SEND MESSAGE ====================
+
+  /**
+   * ارسال پیام از طریق اتصال
+   * POST /api/channels/send
+   */
+  app.post('/send', async (req: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const userId = (req.user as any)?.id;
+
+      if (!userId) {
+        return reply.code(401).send({ error: 'احراز هویت لازم است' });
+      }
+
+      const input = sendChannelMessageSchema.parse(req.body);
+
+      // بررسی مالکیت
+      const existing = await app.prisma.channelConnection.findFirst({
+        where: {
+          id: input.connectionId,
+          bot: { userId },
+        },
+      });
+
+      if (!existing) {
+        return reply.code(404).send({ error: 'اتصال یافت نشد' });
+      }
+
+      const connectionData = await connectionService.getWithAdapter(
+        input.connectionId
+      );
+
+      if (!connectionData) {
+        return reply.code(404).send({ error: 'اتصال یافت نشد' });
+      }
+
+      const result = await connectionData.adapter.sendMessage({
+        chatId: input.chatId,
+        text: input.text,
+        parseMode: input.parseMode,
+        replyToMessageId: input.replyToMessageId,
+        buttons: input.buttons,
+      });
+
+      return result;
+    } catch (error) {
+      app.log.error(error);
+      return reply.code(500).send({ error: 'خطای سرور' });
+    }
+  });
+
+  // ==================== BROADCAST ====================
+
+  /**
+   * ارسال گروهی به همه اتصالات یک ربات
+   * POST /api/channels/broadcast
+   */
+  app.post('/broadcast', async (req: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const userId = (req.user as any)?.id;
+
+      if (!userId) {
+        return reply.code(401).send({ error: 'احراز هویت لازم است' });
+      }
+
+      const input = broadcastSchema.parse(req.body);
+
+      // بررسی مالکیت
+      const bot = await app.prisma.bot.findFirst({
+        where: {
+          id: input.botId,
+          userId,
+        },
+      });
+
+      if (!bot) {
+        return reply.code(404).send({ error: 'ربات یافت نشد' });
+      }
+
+      const result = await routerService.broadcastToBot(input.botId, input.text);
+
+      return {
+        success: true,
+        ...result,
+        message: `${result.sent} پیام ارسال شد، ${result.failed} ناموفق`,
+      };
+    } catch (error) {
+      app.log.error(error);
+      return reply.code(500).send({ error: 'خطای سرور' });
+    }
+  });
+
+  // ==================== STATS ====================
+
+  /**
+   * دریافت آمار
+   * GET /api/channels/stats
+   */
+  app.get('/stats', async (req: FastifyRequest, reply: FastifyReply) => {
+    try {
+      const userId = (req.user as any)?.id;
+
+      if (!userId) {
+        return reply.code(401).send({ error: 'احراز هویت لازم است' });
+      }
+
+      const bots = await app.prisma.bot.findMany({
+        where: { userId },
+        select: { id: true },
+      });
+
+      const botIds = bots.map((b) => b.id);
+
+      const [totalConnections, activeConnections] = await Promise.all([
+        app.prisma.channelConnection.count({
+          where: { botId: { in: botIds } },
+        }),
+        app.prisma.channelConnection.count({
+          where: { botId: { in: botIds }, isActive: true },
+        }),
+      ]);
+
+      return {
+        totalConnections,
+        activeConnections,
+        inactiveConnections: totalConnections - activeConnections,
+      };
+    } catch (error) {
+      app.log.error(error);
+      return reply.code(500).send({ error: 'خطای سرور' });
+    }
+  });
+
+  // ==================== BOT CONNECTIONS ====================
+
+  /**
+   * دریافت اتصالات یک ربات
+   * GET /api/channels/bot/:botId
+   */
+  app.get(
+    '/bot/:botId',
+    async (req: FastifyRequest, reply: FastifyReply) => {
+      try {
+        const userId = (req.user as any)?.id;
+
+        if (!userId) {
+          return reply.code(401).send({ error: 'احراز هویت لازم است' });
+        }
+
+        const { botId } = botIdParamSchema.parse(req.params);
+
+        // بررسی مالکیت
+        const bot = await app.prisma.bot.findFirst({
+          where: { id: botId, userId },
+        });
+
+        if (!bot) {
+          return reply.code(404).send({ error: 'ربات یافت نشد' });
+        }
+
+        const connections = await connectionService.listByBot(botId);
+
+        return {
+          connections,
+          total: connections.length,
+        };
+      } catch (error) {
+        app.log.error(error);
+        return reply.code(500).send({ error: 'خطای سرور' });
+      }
+    }
+  );
+}
+
+export default channelsRoutes;
