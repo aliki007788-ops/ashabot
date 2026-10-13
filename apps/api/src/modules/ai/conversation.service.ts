@@ -36,16 +36,19 @@ export class ConversationService {
       take: limit,
     });
 
-    return messages.reverse().map((m) => ({
-      role: m.role.toLowerCase() as any,
-      content: m.content,
-      toolCalls: m.toolCalls ? JSON.parse(m.toolCalls) : undefined,
-    }));
+    // تاریخچه فقط متن ساده است؛ تعامل‌های ابزار در همان نوبت و در حافظه انجام می‌شود.
+    return messages
+      .reverse()
+      .filter((m) => ['USER', 'ASSISTANT', 'HUMAN'].includes(m.role) && m.content)
+      .map((m) => ({
+        role: (m.role === 'USER' ? 'user' : 'assistant') as 'user' | 'assistant',
+        content: m.content,
+      }));
   }
 
   async addMessage(
     conversationId: string,
-    role: 'SYSTEM' | 'USER' | 'ASSISTANT' | 'TOOL',
+    role: 'SYSTEM' | 'USER' | 'ASSISTANT' | 'TOOL' | 'HUMAN',
     content: string,
     meta?: {
       tokensIn?: number;

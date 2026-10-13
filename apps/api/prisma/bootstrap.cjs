@@ -1,9 +1,9 @@
 /**
  * Bootstrap دیتابیس production (در start:prod بعد از prisma db push اجرا می‌شود).
- *  - اگر دیتابیس خالی باشد: seed کامل اجرا می‌شود.
- *  - همیشه: seed-new-clusters (idempotent) اجرا می‌شود.
- * غیرفعال: SKIP_BOOTSTRAP=1
- * اجرای دوباره کامل: FORCE_SEED=1
+ *  - اگر دیتابیس خالی باشد: seed کامل (seed.ts → کانال‌ها → expand → premium) اجرا می‌شود.
+ *  - همیشه: seed-new-clusters (idempotent) اجرا می‌شود تا خوشه‌های جدید به‌روز باشند.
+ *  - هر مرحله‌ی ناموفق فقط لاگ می‌شود و سرور بالا می‌آید.
+ * غیرفعال‌سازی: SKIP_BOOTSTRAP=1
  */
 const { spawnSync } = require('child_process');
 const path = require('path');
@@ -37,13 +37,4 @@ function run(cmd, args) {
     run('node', ['prisma/seed-premium-clusters.cjs']);
   }
   run('node', ['prisma/seed-new-clusters.cjs']);
-
-  try {
-    const p = new PrismaClient();
-    const [c, br, bo] = await Promise.all([p.cluster.count(), p.brain.count(), p.bot.count()]);
-    console.log(`📊 bootstrap نهایی: ${c} خوشه، ${br} مغز، ${bo} ربات`);
-    await p.$disconnect();
-  } catch (e) {
-    console.warn('⚠️  bootstrap count failed', e.message);
-  }
 })();

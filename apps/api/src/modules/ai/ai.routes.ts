@@ -77,6 +77,12 @@ export async function aiRoutes(app: FastifyInstance) {
   app.post('/chat/stream', { preHandler: [app.authenticate] }, async (request, reply) => {
     const input = chatSchema.parse(request.body);
 
+    const origin = request.headers.origin;
+    if (origin) {
+      reply.raw.setHeader('Access-Control-Allow-Origin', origin);
+      reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
+      reply.raw.setHeader('Vary', 'Origin');
+    }
     reply.raw.setHeader('Content-Type', 'text/event-stream');
     reply.raw.setHeader('Cache-Control', 'no-cache');
     reply.raw.setHeader('Connection', 'keep-alive');

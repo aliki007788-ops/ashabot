@@ -4,13 +4,17 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "prisma db push && node prisma/bootstrap.cjs && tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "start:tsx": "tsx src/server.ts",
+    "start:prod": "prisma db push --skip-generate && node prisma/bootstrap.cjs && node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
-    "prisma:seed": "tsx prisma/seed.ts"
+    "prisma:seed": "tsx prisma/seed.ts",
+    "seed:new": "node prisma/seed-new-clusters.cjs",
+    "seed:all": "FORCE_SEED=1 node prisma/bootstrap.cjs",
+    "dev:fast": "tsx watch src/server.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "0.27.3",

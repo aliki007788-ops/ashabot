@@ -11,6 +11,12 @@ export const createBotSchema = z.object({
   model: z.string().default('gpt-4o-mini'),
   clusterId: z.string().optional().nullable(),
   brainIds: z.array(z.string()).optional(),
+  // ابزارهای مجاز ربات: save_lead, create_booking, get_available_slots, create_payment_link, calculate, get_current_time, handoff_to_human
+  tools: z
+    .array(z.string().max(40))
+    .max(12)
+    .optional()
+    .transform((v) => (v ? JSON.stringify(v) : undefined)),
 });
 
 export const updateBotSchema = createBotSchema.partial();

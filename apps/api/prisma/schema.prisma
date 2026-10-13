@@ -345,6 +345,11 @@ model Conversation {
   sessionId   String    @unique
   title       String?
   isActive    Boolean   @default(true)
+  status      String    @default("BOT")
+  needsHuman  Boolean   @default(false)
+  handoffReason String?
+  assignedToId  String?
+  contactId   String?
   metadata    String?
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
@@ -354,6 +359,7 @@ model Conversation {
   @@index([botId])
   @@index([userId])
   @@index([sessionId])
+  @@index([status])
   @@map("conversations")
 }
 
@@ -437,4 +443,155 @@ model ClusterCommand {
   @@index([clusterId])
   @@index([createdAt])
   @@map("cluster_commands")
+}
+
+
+// ==================== KNOWLEDGE BASE (RAG) ====================
+model KnowledgeBase {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  userId      String?
+  botId       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  documents   KnowledgeDocument[]
+  chunks      KnowledgeChunk[]
+
+  @@index([userId])
+  @@index([botId])
+  @@map("knowledge_bases")
+}
+
+model KnowledgeDocument {
+  id              String        @id @default(cuid())
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  title           String
+  sourceType      String        @default("text")
+  sourceUrl       String?
+  content         String
+  chunkCount      Int           @default(0)
+  createdAt       DateTime      @default(now())
+
+  chunks          KnowledgeChunk[]
+
+  @@index([knowledgeBaseId])
+  @@map("knowledge_documents")
+}
+
+model KnowledgeChunk {
+  id              String            @id @default(cuid())
+  documentId      String
+  document        KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  knowledgeBaseId String
+  knowledgeBase   KnowledgeBase     @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+  idx             Int
+  content         String
+  embedding       String?
+  createdAt       DateTime          @default(now())
+
+  @@index([knowledgeBaseId])
+  @@index([documentId])
+  @@map("knowledge_chunks")
+}
+
+// ==================== CRM ====================
+model Contact {
+  id             String   @id @default(cuid())
+  userId         String?
+  botId          String?
+  conversationId String?
+  name           String?
+  phone          String?
+  email          String?
+  source         String?
+  stage          String   @default("NEW")
+  score          Int      @default(0)
+  tags           String   @default("[]")
+  notes          String?
+  metadata       String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([userId])
+  @@index([stage])
+  @@index([phone])
+  @@map("contacts")
+}
+
+// ==================== BOOKINGS ====================
+model Booking {
+  id            String   @id @default(cuid())
+  userId        String?
+  botId         String?
+  contactId     String?
+  customerName  String
+  customerPhone String?
+  service       String
+  startsAt      DateTime
+  durationMin   Int      @default(30)
+  status        String   @default("PENDING")
+  notes         String?
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([startsAt])
+  @@map("bookings")
+}
+
+// ==================== PAYMENTS ====================
+model Payment {
+  id          String    @id @default(cuid())
+  userId      String?
+  botId       String?
+  contactId   String?
+  amount      Int
+  description String
+  status      String    @default("PENDING")
+  gateway     String    @default("zarinpal")
+  authority   String?
+  refId       String?
+  purpose     String?
+  metadata    String?
+  paidAt      DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([authority])
+  @@map("payments")
+}
+
+// ==================== WORKFLOWS ====================
+model Workflow {
+  id           String   @id @default(cuid())
+  userId       String?
+  botId        String?
+  name         String
+  triggerType  String
+  triggerValue String?
+  actions      String   @default("[]")
+  isActive     Boolean  @default(true)
+  runCount     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+  @@index([botId])
+  @@map("workflows")
+}
+
+// ==================== EVALS ====================
+model EvalCase {
+  id             String   @id @default(cuid())
+  botId          String
+  userId         String?
+  input          String
+  mustContain    String?
+  mustNotContain String?
+  createdAt      DateTime @default(now())
+
+  @@index([botId])
+  @@map("eval_cases")
 }
