@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+﻿import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -32,6 +32,7 @@ import { marketplaceRoutes } from './modules/marketplace/marketplace.routes.js';
 import { evalsRoutes } from './modules/evals/evals.routes.js';
 import { TOOL_NAMES } from './modules/tools/tools.registry.js';
 import { WebChatAdapter } from './modules/channels/adapters/webchat.adapter.js';
+import { adminImportRoutes } from './modules/admin/import.routes.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -109,7 +110,7 @@ export async function buildApp() {
     timestamp: new Date().toISOString(),
   }));
 
-  // آمار سریع برای عیب‌یابی دیپلوی (عمومی، بدون داده حساس)
+  // Ø¢Ù…Ø§Ø± Ø³Ø±ÛŒØ¹ Ø¨Ø±Ø§ÛŒ Ø¹ÛŒØ¨â€ŒÛŒØ§Ø¨ÛŒ Ø¯ÛŒÙ¾Ù„ÙˆÛŒ (Ø¹Ù…ÙˆÙ…ÛŒØŒ Ø¨Ø¯ÙˆÙ† Ø¯Ø§Ø¯Ù‡ Ø­Ø³Ø§Ø³)
   app.get('/api/meta', async () => {
     const [clusters, bots, templates] = await Promise.all([
       app.prisma.cluster.count(),
@@ -152,6 +153,9 @@ export async function buildApp() {
 
   // ==================== WEBHOOK ROUTES ====================
   await app.register(webhooksRoutes, { prefix: '/api/webhooks' });
+
+  // ==================== TEMP: Admin Import (remove after use) ====================
+  await app.register(adminImportRoutes, { prefix: '/api/admin' });
 
   return app;
 }
