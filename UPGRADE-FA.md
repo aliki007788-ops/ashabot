@@ -36,3 +36,7 @@
 ## ۴) اجرای لوکال (مهم)
 خوشه‌های جدید باید یک‌بار در دیتابیس ساخته شوند. حالا `pnpm --filter @bot-platform/api dev` (یعنی همان START.bat) خودکار
 `prisma db push` + seed خوشه‌های جدید را می‌زند. اگر نمی‌خواهید: `dev:fast`. یا فایل `SEED-NEW.bat` را یک‌بار اجرا کنید.
+
+## ۵) Seed خودکار هنگام استارت سرور
+حالا خود `server.ts` بعد از بالا آمدن، `prisma/bootstrap.cjs` را اجرا می‌کند؛ پس مستقل از Start Command رندر کار می‌کند.
+آمار سریع: `GET /api/meta` → {clusters, bots, templates}. غیرفعال: `SKIP_BOOTSTRAP=1`.

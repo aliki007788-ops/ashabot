@@ -109,6 +109,16 @@ export async function buildApp() {
     timestamp: new Date().toISOString(),
   }));
 
+  // آمار سریع برای عیب‌یابی دیپلوی (عمومی، بدون داده حساس)
+  app.get('/api/meta', async () => {
+    const [clusters, bots, templates] = await Promise.all([
+      app.prisma.cluster.count(),
+      app.prisma.bot.count(),
+      app.prisma.bot.count({ where: { userId: null } }),
+    ]);
+    return { clusters, bots, templates, version: '2.0.0' };
+  });
+
   app.get('/', async () => ({
     name: 'ashabot-api',
     status: 'running',

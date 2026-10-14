@@ -10,8 +10,13 @@ const path = require('path');
 const { PrismaClient } = require('@prisma/client');
 
 const root = path.join(__dirname, '..');
-function run(cmd, args) {
-  const r = spawnSync(cmd, args, { cwd: root, stdio: 'inherit', env: process.env });
+function run(cmd, args, useShell) {
+  const r = spawnSync(cmd, args, {
+    cwd: root,
+    stdio: 'inherit',
+    env: process.env,
+    shell: !!useShell && process.platform === 'win32',
+  });
   if (r.status !== 0) console.warn(`⚠️  step failed: ${cmd} ${args.join(' ')}`);
   return r.status === 0;
 }
@@ -30,11 +35,11 @@ function run(cmd, args) {
   }
 
   if (clusters === 0 || process.env.FORCE_SEED === '1') {
-    console.log('🌱 دیتابیس خالی است؛ seed کامل اجرا می‌شود...');
-    run('npx', ['tsx', 'prisma/seed.ts']);
-    run('node', ['prisma/seed-channels.cjs']);
-    run('node', ['prisma/seed-expand.cjs']);
-    run('node', ['prisma/seed-premium-clusters.cjs']);
+    console.log('[bootstrap] 🌱 دیتابیس خالی است؛ seed کامل اجرا می‌شود...');
+    run('npx', ['tsx', 'prisma/seed.ts'], true);
+    run(process.execPath, ['prisma/seed-channels.cjs']);
+    run(process.execPath, ['prisma/seed-expand.cjs']);
+    run(process.execPath, ['prisma/seed-premium-clusters.cjs']);
   }
-  run('node', ['prisma/seed-new-clusters.cjs']);
+  run(process.execPath, ['prisma/seed-new-clusters.cjs']);
 })();

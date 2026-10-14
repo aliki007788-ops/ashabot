@@ -4,11 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "prisma db push && node prisma/bootstrap.cjs && tsx watch src/server.ts",
+    "dev": "prisma db push && tsx watch src/server.ts",
     "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "start:tsx": "tsx src/server.ts",
-    "start:prod": "prisma db push --skip-generate && node prisma/bootstrap.cjs && node dist/server.js",
+    "start:prod": "prisma db push --skip-generate && node dist/server.js",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate deploy",
     "prisma:seed": "tsx prisma/seed.ts",

@@ -61,5 +61,3 @@ seed-*.cjs
 write-channels.*
 test-ai*.ps1
 fix-channels-routes.js
-# seed scripts needed in production
-!apps/api/prisma/seed*.cjs
