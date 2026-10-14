@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { ci } from '../../lib/dbmode.js';
 import { z } from 'zod';
 
 export const STAGES = ['NEW', 'CONTACTED', 'QUALIFIED', 'PROPOSAL', 'WON', 'LOST'] as const;
@@ -31,9 +32,9 @@ export async function crmRoutes(app: FastifyInstance) {
         ...(q.stage ? { stage: q.stage } : {}),
         ...(q.q
           ? { OR: [
-              { name: { contains: q.q, mode: 'insensitive' } },
+              { name: { contains: q.q, ...ci } },
               { phone: { contains: q.q } },
-              { email: { contains: q.q, mode: 'insensitive' } },
+              { email: { contains: q.q, ...ci } },
             ] }
           : {}),
       },

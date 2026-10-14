@@ -8,7 +8,7 @@ echo ============================================
 echo.
 
 echo [1/2] Starting API (port 4000)...
-start "API-4000" cmd /k "cd /d C:\Users\K.ali\Desktop\bot-platform01 && pnpm --filter @bot-platform/api dev"
+start "API-4000" cmd /k "cd /d C:\Users\K.ali\Desktop\bot-platform01 && pnpm --filter @bot-platform/api dev:local"
 
 timeout /t 8 /nobreak >nul
 

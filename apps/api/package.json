@@ -14,6 +14,7 @@
     "prisma:seed": "tsx prisma/seed.ts",
     "seed:new": "node prisma/seed-new-clusters.cjs",
     "seed:all": "FORCE_SEED=1 node prisma/bootstrap.cjs",
+    "dev:local": "node scripts/local.cjs",
     "dev:fast": "tsx watch src/server.ts"
   },
   "dependencies": {

@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { ci } from '../../lib/dbmode.js';
 import { Prisma } from '@prisma/client';
 
 const slugify = (s: string) =>
@@ -21,8 +22,8 @@ export class BotsService {
     const where: Prisma.BotWhereInput = {};
     if (params.q) {
       where.OR = [
-        { name: { contains: params.q, mode: 'insensitive' } },
-        { description: { contains: params.q, mode: 'insensitive' } },
+        { name: { contains: params.q, ...ci } },
+        { description: { contains: params.q, ...ci } },
       ];
     }
     if (params.clusterId) where.clusterId = params.clusterId;

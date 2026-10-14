@@ -61,3 +61,6 @@ seed-*.cjs
 write-channels.*
 test-ai*.ps1
 fix-channels-routes.js
+# local sqlite
+apps/api/prisma/local.db*
+apps/api/prisma/schema.local.prisma

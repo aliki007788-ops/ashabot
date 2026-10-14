@@ -1,4 +1,5 @@
 import type { FastifyInstance } from 'fastify';
+import { ci } from '../../lib/dbmode.js';
 import { z } from 'zod';
 
 /** فروشگاه قالب‌ها: ربات‌های پرمیوم/قالب را برای کاربر نصب (کپی) می‌کند */
@@ -14,8 +15,8 @@ export async function marketplaceRoutes(app: FastifyInstance) {
         ...(q.cluster ? { cluster: { slug: q.cluster } } : {}),
         ...(q.premium === 'true' ? { isPremium: true } : {}),
         ...(q.q ? { OR: [
-          { name: { contains: q.q, mode: 'insensitive' } },
-          { description: { contains: q.q, mode: 'insensitive' } },
+          { name: { contains: q.q, ...ci } },
+          { description: { contains: q.q, ...ci } },
         ] } : {}),
       },
       select: {
