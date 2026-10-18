@@ -11,7 +11,8 @@
 
 import { PrismaClient } from '@prisma/client';
 import { ChannelConnectionService } from './channel-connection.service.js';
-import { BaseChannelAdapter, IncomingMessage, ChannelType } from './adapters/index.js';
+import { BaseChannelAdapter, ChannelType } from './adapters/index.js';
+import type { IncomingMessage } from './adapters/base.adapter.js';
 
 // ==================== TYPES ====================
 

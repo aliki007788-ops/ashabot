@@ -1,0 +1,952 @@
+{
+ "journey-orchestrator": {
+  "name": "Real-time Journey Orchestrator",
+  "icon": "🗺️",
+  "cluster": "sales"
+ },
+ "welcome": {
+  "name": "ربات خوش‌آمدگویی",
+  "icon": "👋",
+  "cluster": "sales"
+ },
+ "needs-discovery": {
+  "name": "ربات شناسایی نیاز",
+  "icon": "🔍",
+  "cluster": "sales"
+ },
+ "product-recommend": {
+  "name": "ربات پیشنهاد محصول",
+  "icon": "🎯",
+  "cluster": "sales"
+ },
+ "product-compare": {
+  "name": "ربات مقایسه محصولات",
+  "icon": "⚖️",
+  "cluster": "sales"
+ },
+ "price-manager": {
+  "name": "ربات مدیریت قیمت",
+  "icon": "💰",
+  "cluster": "sales"
+ },
+ "objection-handler": {
+  "name": "ربات برطرف‌کنندگی شکوک",
+  "icon": "💬",
+  "cluster": "sales"
+ },
+ "cross-sell": {
+  "name": "ربات فروش متقاطع",
+  "icon": "🔗",
+  "cluster": "sales"
+ },
+ "up-sell": {
+  "name": "ربات فروش اضافی",
+  "icon": "⬆️",
+  "cluster": "sales"
+ },
+ "urgency-creator": {
+  "name": "ربات تحریک خرید",
+  "icon": "🔥",
+  "cluster": "sales"
+ },
+ "checkout-helper": {
+  "name": "ربات بسته‌بندی و نهایی‌سازی",
+  "icon": "📦",
+  "cluster": "sales"
+ },
+ "targeted-ads": {
+  "name": "ربات تبلیغات هدفمند",
+  "icon": "🎯",
+  "cluster": "lead-generation"
+ },
+ "research-forms": {
+  "name": "ربات فرم‌های تحقیقاتی",
+  "icon": "📋",
+  "cluster": "lead-generation"
+ },
+ "lead-scoring": {
+  "name": "ربات امتیازدهی سرنخ",
+  "icon": "⭐",
+  "cluster": "lead-generation"
+ },
+ "customer-segment": {
+  "name": "ربات دسته‌بندی مشتری",
+  "icon": "🗂️",
+  "cluster": "lead-generation"
+ },
+ "signup-encourager": {
+  "name": "ربات ترغیب ثبت‌نام",
+  "icon": "✉️",
+  "cluster": "lead-generation"
+ },
+ "cart-recovery": {
+  "name": "ربات بازیابی بازدید",
+  "icon": "🛒",
+  "cluster": "lead-generation"
+ },
+ "behavior-analyzer": {
+  "name": "ربات تحلیل رفتار",
+  "icon": "📈",
+  "cluster": "lead-generation"
+ },
+ "referral": {
+  "name": "ربات ارجاع دوستانه",
+  "icon": "🤝",
+  "cluster": "lead-generation"
+ },
+ "contest": {
+  "name": "ربات کنکوری و رقابتی",
+  "icon": "🏆",
+  "cluster": "lead-generation"
+ },
+ "survey": {
+  "name": "ربات نظرسنجی",
+  "icon": "📊",
+  "cluster": "lead-generation"
+ },
+ "support-247": {
+  "name": "ربات پشتیبانی ۲۴/۷",
+  "icon": "🕐",
+  "cluster": "support"
+ },
+ "maintenance": {
+  "name": "ربات تعمیر و نگهداری",
+  "icon": "🔧",
+  "cluster": "support"
+ },
+ "order-tracking": {
+  "name": "ربات ردیابی سفارش",
+  "icon": "📍",
+  "cluster": "support"
+ },
+ "complaint-manager": {
+  "name": "ربات مدیریت شکایات",
+  "icon": "📝",
+  "cluster": "support"
+ },
+ "return-exchange": {
+  "name": "ربات تعویض و بازگشت",
+  "icon": "↩️",
+  "cluster": "support"
+ },
+ "tech-support": {
+  "name": "ربات مشاوره فنی",
+  "icon": "🛠️",
+  "cluster": "support"
+ },
+ "loyalty": {
+  "name": "ربات برنامه‌های وفاداری",
+  "icon": "🎁",
+  "cluster": "support"
+ },
+ "maintenance-reminder": {
+  "name": "ربات یادآوری نگهداری",
+  "icon": "🔔",
+  "cluster": "support"
+ },
+ "post-purchase-feedback": {
+  "name": "ربات بازخورد پس‌ازخرید",
+  "icon": "⭐",
+  "cluster": "support"
+ },
+ "info-retrieval": {
+  "name": "ربات استرجاع اطلاعات",
+  "icon": "📂",
+  "cluster": "support"
+ },
+ "payment-request": {
+  "name": "ربات درخواست پرداخت",
+  "icon": "💳",
+  "cluster": "finance"
+ },
+ "payment-followup": {
+  "name": "ربات پیگیری پرداخت",
+  "icon": "📞",
+  "cluster": "finance"
+ },
+ "payment-confirm": {
+  "name": "ربات تأیید پرداخت",
+  "icon": "✅",
+  "cluster": "finance"
+ },
+ "installment": {
+  "name": "ربات مدیریت اقساط",
+  "icon": "📅",
+  "cluster": "finance"
+ },
+ "expense-tracker": {
+  "name": "ربات ردیابی هزینه‌ها",
+  "icon": "🧾",
+  "cluster": "finance"
+ },
+ "receipt-issuer": {
+  "name": "ربات صدور رسید",
+  "icon": "🧾",
+  "cluster": "finance"
+ },
+ "budget-manager": {
+  "name": "ربات مدیریت بودجه",
+  "icon": "💼",
+  "cluster": "finance"
+ },
+ "financial-report": {
+  "name": "ربات گزارش مالی",
+  "icon": "📊",
+  "cluster": "finance"
+ },
+ "discount-manager": {
+  "name": "ربات مدیریت تخفیف",
+  "icon": "🏷️",
+  "cluster": "finance"
+ },
+ "invoice-request": {
+  "name": "ربات درخواست فاکتور",
+  "icon": "📄",
+  "cluster": "finance"
+ },
+ "inventory-monitor": {
+  "name": "ربات نظارت موجودی",
+  "icon": "📦",
+  "cluster": "inventory"
+ },
+ "low-stock-alert": {
+  "name": "ربات هشدار کمی",
+  "icon": "⚠️",
+  "cluster": "inventory"
+ },
+ "auto-reorder": {
+  "name": "ربات سفارش خودکار",
+  "icon": "🔄",
+  "cluster": "inventory"
+ },
+ "warehouse-manager": {
+  "name": "ربات مدیریت انبار",
+  "icon": "🏭",
+  "cluster": "inventory"
+ },
+ "dead-stock": {
+  "name": "ربات شناسایی محصولات باطل",
+  "icon": "🚫",
+  "cluster": "inventory"
+ },
+ "demand-forecast": {
+  "name": "ربات پیش‌بینی تقاضا",
+  "icon": "📈",
+  "cluster": "inventory"
+ },
+ "expiry-manager": {
+  "name": "ربات مدیریت تاریخ انقضا",
+  "icon": "⏳",
+  "cluster": "inventory"
+ },
+ "dynamic-pricing": {
+  "name": "ربات تنظیم قیمت نسبت به موجودی",
+  "icon": "💹",
+  "cluster": "inventory"
+ },
+ "inventory-report": {
+  "name": "ربات گزارش موجودی",
+  "icon": "📋",
+  "cluster": "inventory"
+ },
+ "slow-mover": {
+  "name": "ربات شناسایی کند‌فروش",
+  "icon": "🐢",
+  "cluster": "inventory"
+ },
+ "brand-guardian": {
+  "name": "ربات نگهبان شخصیت برند",
+  "icon": "🎭",
+  "cluster": "marketing"
+ },
+ "email-marketing": {
+  "name": "ربات ایمیل مارکتینگ",
+  "icon": "📧",
+  "cluster": "marketing"
+ },
+ "social-poster": {
+  "name": "ربات پیام‌های شبکه‌های اجتماعی",
+  "icon": "📱",
+  "cluster": "marketing"
+ },
+ "content-scheduler": {
+  "name": "ربات جدول‌بندی محتوا",
+  "icon": "🗓️",
+  "cluster": "marketing"
+ },
+ "campaign-analyzer": {
+  "name": "ربات تحلیل سنجش",
+  "icon": "📊",
+  "cluster": "marketing"
+ },
+ "ab-tester": {
+  "name": "ربات تست A/B",
+  "icon": "🔬",
+  "cluster": "marketing"
+ },
+ "audience-segment": {
+  "name": "ربات تقسیم‌بندی مخاطبین",
+  "icon": "👥",
+  "cluster": "marketing"
+ },
+ "email-blast": {
+  "name": "ربات طوفان ایمیلی",
+  "icon": "🌪️",
+  "cluster": "marketing"
+ },
+ "content-reminder": {
+  "name": "ربات یادآوری محتوا",
+  "icon": "🔔",
+  "cluster": "marketing"
+ },
+ "content-repurposer": {
+  "name": "ربات تبدیل محتوا",
+  "icon": "🔄",
+  "cluster": "marketing"
+ },
+ "subscriber-manager": {
+  "name": "ربات مدیریت مشترکین",
+  "icon": "📇",
+  "cluster": "marketing"
+ },
+ "silent-churn-guardian": {
+  "name": "Silent Churn Guardian",
+  "icon": "🛡️",
+  "cluster": "analytics"
+ },
+ "live-clv": {
+  "name": "Live CLV Adjuster",
+  "icon": "💎",
+  "cluster": "analytics"
+ },
+ "business-dashboard": {
+  "name": "ربات داشبورد تجاری",
+  "icon": "🖥️",
+  "cluster": "analytics"
+ },
+ "sales-analyzer": {
+  "name": "ربات تحلیل فروش",
+  "icon": "📈",
+  "cluster": "analytics"
+ },
+ "traffic-analyzer": {
+  "name": "ربات تحلیل ترافیک",
+  "icon": "🌐",
+  "cluster": "analytics"
+ },
+ "roi-reporter": {
+  "name": "ربات گزارش ROI",
+  "icon": "💹",
+  "cluster": "analytics"
+ },
+ "customer-behavior": {
+  "name": "ربات تحلیل رفتار مشتری",
+  "icon": "🧠",
+  "cluster": "analytics"
+ },
+ "competitor-report": {
+  "name": "ربات گزارش رقابتی",
+  "icon": "🏁",
+  "cluster": "analytics"
+ },
+ "kpi-alert": {
+  "name": "ربات هشدار شاخص",
+  "icon": "🚨",
+  "cluster": "analytics"
+ },
+ "trend-forecast": {
+  "name": "ربات پیش‌بینی روندی",
+  "icon": "🔮",
+  "cluster": "analytics"
+ },
+ "product-analyzer": {
+  "name": "ربات تحلیل کالاها",
+  "icon": "📦",
+  "cluster": "analytics"
+ },
+ "custom-report": {
+  "name": "ربات گزارش‌های شخصی‌سازی‌شده",
+  "icon": "📑",
+  "cluster": "analytics"
+ },
+ "burnout-balancer": {
+  "name": "Workload & Burnout Balancer",
+  "icon": "⚖️",
+  "cluster": "hr"
+ },
+ "leave-manager": {
+  "name": "ربات مدیریت تعطیلات",
+  "icon": "🏖️",
+  "cluster": "hr"
+ },
+ "attendance": {
+  "name": "ربات ردیابی حضور",
+  "icon": "🕒",
+  "cluster": "hr"
+ },
+ "employee-satisfaction": {
+  "name": "ربات تحقیق رضایت کارمند",
+  "icon": "😊",
+  "cluster": "hr"
+ },
+ "task-assigner": {
+  "name": "ربات انتساب وظایف",
+  "icon": "📌",
+  "cluster": "hr"
+ },
+ "deadline-reminder": {
+  "name": "ربات یادآوری ددلاین",
+  "icon": "⏰",
+  "cluster": "hr"
+ },
+ "project-manager": {
+  "name": "ربات مدیریت پروژه",
+  "icon": "📊",
+  "cluster": "hr"
+ },
+ "meeting-scheduler": {
+  "name": "ربات نظام‌دهی جلسات",
+  "icon": "📅",
+  "cluster": "hr"
+ },
+ "performance-report": {
+  "name": "ربات گزارش عملکرد",
+  "icon": "📈",
+  "cluster": "hr"
+ },
+ "learning-dev": {
+  "name": "ربات آموزش و توسعه",
+  "icon": "📚",
+  "cluster": "hr"
+ },
+ "feedback-360": {
+  "name": "ربات فیدبک ۳۶۰ درجه",
+  "icon": "🔄",
+  "cluster": "hr"
+ },
+ "supplier-manager": {
+  "name": "ربات مدیریت تامین‌کنندگان",
+  "icon": "🤝",
+  "cluster": "supply-chain"
+ },
+ "purchase-order": {
+  "name": "ربات سفارش خرید",
+  "icon": "🛒",
+  "cluster": "supply-chain"
+ },
+ "shipment-tracker": {
+  "name": "ربات ردیابی حمل‌ونقل",
+  "icon": "🚚",
+  "cluster": "supply-chain"
+ },
+ "delay-tracker": {
+  "name": "ربات پیگیری تاخیر",
+  "icon": "⏱️",
+  "cluster": "supply-chain"
+ },
+ "quality-control": {
+  "name": "ربات کنترل کیفیت",
+  "icon": "✅",
+  "cluster": "supply-chain"
+ },
+ "logistics-coordinator": {
+  "name": "ربات هماهنگی لجستیک",
+  "icon": "🔗",
+  "cluster": "supply-chain"
+ },
+ "shipping-cost": {
+  "name": "ربات مدیریت حمل‌بها",
+  "icon": "💵",
+  "cluster": "supply-chain"
+ },
+ "warehouse-sync": {
+  "name": "ربات تنسیق انبارداری",
+  "icon": "🏭",
+  "cluster": "supply-chain"
+ },
+ "supply-report": {
+  "name": "ربات گزارش تامین",
+  "icon": "📋",
+  "cluster": "supply-chain"
+ },
+ "supply-forecast": {
+  "name": "ربات پیش‌بینی تقاضا تامین",
+  "icon": "🔮",
+  "cluster": "supply-chain"
+ },
+ "cross-dept-decision": {
+  "name": "Cross-Department Decision Bot",
+  "icon": "⚖️",
+  "cluster": "innovation"
+ },
+ "knowledge-evolution": {
+  "name": "Internal Knowledge Evolution Bot",
+  "icon": "📚",
+  "cluster": "innovation"
+ },
+ "process-debt": {
+  "name": "Process Debt Detector",
+  "icon": "🔍",
+  "cluster": "innovation"
+ },
+ "idea-collector": {
+  "name": "ربات جمع‌آوری ایده",
+  "icon": "💡",
+  "cluster": "innovation"
+ },
+ "problem-analyzer": {
+  "name": "ربات تحلیل مشکلات",
+  "icon": "🔬",
+  "cluster": "innovation"
+ },
+ "customer-survey": {
+  "name": "ربات نظرسنجی مشتری",
+  "icon": "📝",
+  "cluster": "innovation"
+ },
+ "new-product-test": {
+  "name": "ربات تست محصول جدید",
+  "icon": "🧪",
+  "cluster": "innovation"
+ },
+ "beta-feedback": {
+  "name": "ربات بازخورد بتا تسترها",
+  "icon": "👥",
+  "cluster": "innovation"
+ },
+ "bug-tracker": {
+  "name": "ربات مدیریت باگ و خرابی",
+  "icon": "🐛",
+  "cluster": "innovation"
+ },
+ "product-dev-tracker": {
+  "name": "ربات ردیابی توسعه محصول",
+  "icon": "🚀",
+  "cluster": "innovation"
+ },
+ "competitor-analysis": {
+  "name": "ربات تحلیل رقابت",
+  "icon": "🏁",
+  "cluster": "innovation"
+ },
+ "improvement-suggester": {
+  "name": "ربات پیشنهادات بهبود",
+  "icon": "✨",
+  "cluster": "innovation"
+ },
+ "kpi-improvement": {
+  "name": "ربات ردیابی KPI بهبود",
+  "icon": "📊",
+  "cluster": "innovation"
+ },
+ "customer-training": {
+  "name": "ربات آموزش مشتری",
+  "icon": "🎓",
+  "cluster": "education"
+ },
+ "content-tutor": {
+  "name": "ربات محتوای آموزشی",
+  "icon": "📚",
+  "cluster": "education"
+ },
+ "video-tutor": {
+  "name": "ربات ویدیوهای آموزشی",
+  "icon": "🎥",
+  "cluster": "education"
+ },
+ "quiz-master": {
+  "name": "ربات آزمون و ارزیابی",
+  "icon": "🧪",
+  "cluster": "education"
+ },
+ "course-enrollment": {
+  "name": "ربات ثبت‌نام دوره",
+  "icon": "📝",
+  "cluster": "education"
+ },
+ "edu-gamification": {
+  "name": "ربات گیمیفیکیشن آموزشی",
+  "icon": "🏆",
+  "cluster": "education"
+ },
+ "learning-path": {
+  "name": "ربات مسیر یادگیری",
+  "icon": "🎯",
+  "cluster": "education"
+ },
+ "edu-qa": {
+  "name": "ربات پرسش و پاسخ آموزشی",
+  "icon": "💬",
+  "cluster": "education"
+ },
+ "contract-bot": {
+  "name": "ربات قراردادها",
+  "icon": "📜",
+  "cluster": "legal"
+ },
+ "legal-advice": {
+  "name": "ربات مشاوره حقوقی",
+  "icon": "⚖️",
+  "cluster": "legal"
+ },
+ "digital-signature": {
+  "name": "ربات امضای دیجیتال",
+  "icon": "🔏",
+  "cluster": "legal"
+ },
+ "compliance-bot": {
+  "name": "ربات انطباق (Compliance)",
+  "icon": "📋",
+  "cluster": "legal"
+ },
+ "gdpr-bot": {
+  "name": "ربات حفاظت داده (GDPR)",
+  "icon": "🛡️",
+  "cluster": "legal"
+ },
+ "legal-docs": {
+  "name": "ربات اسناد حقوقی",
+  "icon": "📄",
+  "cluster": "legal"
+ },
+ "terms-reviewer": {
+  "name": "ربات بررسی شرایط",
+  "icon": "🔍",
+  "cluster": "legal"
+ },
+ "auth-bot": {
+  "name": "ربات احراز هویت",
+  "icon": "🔒",
+  "cluster": "security"
+ },
+ "threat-detection": {
+  "name": "ربات تشخیص تهدید",
+  "icon": "🛡️",
+  "cluster": "security"
+ },
+ "security-alert": {
+  "name": "ربات هشدار امنیتی",
+  "icon": "🚨",
+  "cluster": "security"
+ },
+ "encryption-bot": {
+  "name": "ربات رمزنگاری",
+  "icon": "🔐",
+  "cluster": "security"
+ },
+ "audit-log": {
+  "name": "ربات نظارت و لاگ",
+  "icon": "👁️",
+  "cluster": "security"
+ },
+ "intrusion-detection": {
+  "name": "ربات تشخیص نفوذ",
+  "icon": "🕵️",
+  "cluster": "security"
+ },
+ "access-manager": {
+  "name": "ربات مدیریت دسترسی",
+  "icon": "🔑",
+  "cluster": "security"
+ },
+ "adaptive-learning-coach": {
+  "name": "Adaptive Learning Coach",
+  "icon": "🎓",
+  "cluster": "premium-learning"
+ },
+ "legal-doc-analyzer": {
+  "name": "Legal Document Analyzer",
+  "icon": "📝",
+  "cluster": "premium-legal"
+ },
+ "zero-trust-enforcer": {
+  "name": "Zero-Trust Enforcer",
+  "icon": "🔒",
+  "cluster": "premium-security"
+ },
+ "multi-lang-orchestrator": {
+  "name": "Multi-Language Orchestrator",
+  "icon": "🌐",
+  "cluster": "premium-multilang"
+ },
+ "voice-sentiment": {
+  "name": "Voice Sentiment Analyzer",
+  "icon": "📞",
+  "cluster": "premium-voice"
+ },
+ "kb-support-agent": {
+  "name": "پاسخگوی دانش‌محور",
+  "icon": "📖",
+  "cluster": "knowledge-rag"
+ },
+ "kb-faq-builder": {
+  "name": "سازنده سؤالات متداول",
+  "icon": "❓",
+  "cluster": "knowledge-rag"
+ },
+ "kb-policy-assistant": {
+  "name": "دستیار قوانین و سیاست‌ها",
+  "icon": "📜",
+  "cluster": "knowledge-rag"
+ },
+ "kb-onboarding-guide": {
+  "name": "راهنمای ورود کارمند/مشتری",
+  "icon": "🧭",
+  "cluster": "knowledge-rag"
+ },
+ "kb-product-expert": {
+  "name": "متخصص محصول",
+  "icon": "🔎",
+  "cluster": "knowledge-rag"
+ },
+ "kb-doc-summarizer": {
+  "name": "خلاصه‌ساز اسناد",
+  "icon": "📝",
+  "cluster": "knowledge-rag"
+ },
+ "shop-sales-assistant": {
+  "name": "دستیار فروشگاه",
+  "icon": "🛒",
+  "cluster": "conversational-commerce"
+ },
+ "shop-cart-recovery": {
+  "name": "بازیابی سبد رها‌شده",
+  "icon": "🔄",
+  "cluster": "conversational-commerce"
+ },
+ "shop-price-watch": {
+  "name": "پایش قیمت و رقبا",
+  "icon": "💹",
+  "cluster": "conversational-commerce"
+ },
+ "shop-order-status": {
+  "name": "پیگیری سفارش",
+  "icon": "📦",
+  "cluster": "conversational-commerce"
+ },
+ "shop-upsell-advisor": {
+  "name": "مشاور فروش مکمل",
+  "icon": "⬆️",
+  "cluster": "conversational-commerce"
+ },
+ "shop-return-handler": {
+  "name": "مدیریت مرجوعی",
+  "icon": "↩️",
+  "cluster": "conversational-commerce"
+ },
+ "shop-gift-finder": {
+  "name": "مشاور هدیه",
+  "icon": "🎁",
+  "cluster": "conversational-commerce"
+ },
+ "ig-dm-closer": {
+  "name": "بستن فروش در دایرکت",
+  "icon": "💌",
+  "cluster": "instagram-automation"
+ },
+ "ig-comment-replier": {
+  "name": "پاسخگوی کامنت",
+  "icon": "💬",
+  "cluster": "instagram-automation"
+ },
+ "ig-story-engager": {
+  "name": "تعامل با استوری",
+  "icon": "📲",
+  "cluster": "instagram-automation"
+ },
+ "ig-lead-qualifier": {
+  "name": "ارزیابی سرنخ دایرکت",
+  "icon": "🎯",
+  "cluster": "instagram-automation"
+ },
+ "ig-giveaway-manager": {
+  "name": "مدیر قرعه‌کشی و چالش",
+  "icon": "🎉",
+  "cluster": "instagram-automation"
+ },
+ "ig-followup-sequencer": {
+  "name": "پیگیری خودکار",
+  "icon": "⏰",
+  "cluster": "instagram-automation"
+ },
+ "book-receptionist": {
+  "name": "منشی هوشمند نوبت‌دهی",
+  "icon": "🗓️",
+  "cluster": "booking-appointments"
+ },
+ "book-clinic-assistant": {
+  "name": "دستیار کلینیک",
+  "icon": "🏥",
+  "cluster": "booking-appointments"
+ },
+ "book-salon-assistant": {
+  "name": "دستیار سالن زیبایی",
+  "icon": "💇",
+  "cluster": "booking-appointments"
+ },
+ "book-restaurant": {
+  "name": "رزرو رستوران و کافه",
+  "icon": "🍽️",
+  "cluster": "booking-appointments"
+ },
+ "book-hotel-concierge": {
+  "name": "کنسیرژ هتل و اقامتگاه",
+  "icon": "🏨",
+  "cluster": "booking-appointments"
+ },
+ "book-reminder": {
+  "name": "یادآوری و کاهش غیبت",
+  "icon": "🔔",
+  "cluster": "booking-appointments"
+ },
+ "voice-inbound-agent": {
+  "name": "اسکریپت تماس ورودی",
+  "icon": "📞",
+  "cluster": "voice-agents"
+ },
+ "voice-outbound-sales": {
+  "name": "تماس فروش خروجی",
+  "icon": "📣",
+  "cluster": "voice-agents"
+ },
+ "voice-payment-reminder": {
+  "name": "یادآوری پرداخت تلفنی",
+  "icon": "💳",
+  "cluster": "voice-agents"
+ },
+ "voice-survey-caller": {
+  "name": "نظرسنجی تلفنی",
+  "icon": "📋",
+  "cluster": "voice-agents"
+ },
+ "voice-call-summarizer": {
+  "name": "خلاصه و امتیازدهی تماس",
+  "icon": "🧾",
+  "cluster": "voice-agents"
+ },
+ "hr-resume-screener": {
+  "name": "غربالگر رزومه",
+  "icon": "📄",
+  "cluster": "recruitment"
+ },
+ "hr-first-interviewer": {
+  "name": "مصاحبه‌گر اولیه",
+  "icon": "🎤",
+  "cluster": "recruitment"
+ },
+ "hr-interview-scheduler": {
+  "name": "زمان‌بند مصاحبه",
+  "icon": "🗓️",
+  "cluster": "recruitment"
+ },
+ "hr-jd-writer": {
+  "name": "نویسنده آگهی شغلی",
+  "icon": "✍️",
+  "cluster": "recruitment"
+ },
+ "hr-offer-assistant": {
+  "name": "دستیار پیشنهاد کار",
+  "icon": "🤝",
+  "cluster": "recruitment"
+ },
+ "hr-onboarding-buddy": {
+  "name": "همراه روز اول کارمند",
+  "icon": "🌱",
+  "cluster": "recruitment"
+ },
+ "acc-invoice-writer": {
+  "name": "صدور فاکتور و پیش‌فاکتور",
+  "icon": "🧾",
+  "cluster": "accounting-invoicing"
+ },
+ "acc-expense-classifier": {
+  "name": "دسته‌بندی هزینه‌ها",
+  "icon": "🗂️",
+  "cluster": "accounting-invoicing"
+ },
+ "acc-debt-collector": {
+  "name": "یادآوری بدهی مشتری",
+  "icon": "⏳",
+  "cluster": "accounting-invoicing"
+ },
+ "acc-tax-helper": {
+  "name": "راهنمای مالیات و مودیان",
+  "icon": "🏛️",
+  "cluster": "accounting-invoicing"
+ },
+ "acc-cashflow-advisor": {
+  "name": "مشاور جریان نقدی",
+  "icon": "💧",
+  "cluster": "accounting-invoicing"
+ },
+ "acc-installment-planner": {
+  "name": "برنامه‌ریز اقساط",
+  "icon": "📆",
+  "cluster": "accounting-invoicing"
+ },
+ "cf-reels-scripter": {
+  "name": "نویسنده ریلز و ویدیو کوتاه",
+  "icon": "🎬",
+  "cluster": "content-factory"
+ },
+ "cf-caption-writer": {
+  "name": "کپشن‌نویس",
+  "icon": "✍️",
+  "cluster": "content-factory"
+ },
+ "cf-seo-writer": {
+  "name": "نویسنده مقاله سئو",
+  "icon": "🔍",
+  "cluster": "content-factory"
+ },
+ "cf-calendar-planner": {
+  "name": "برنامه‌ریز تقویم محتوا",
+  "icon": "🗓️",
+  "cluster": "content-factory"
+ },
+ "cf-idea-generator": {
+  "name": "مولد ایده محتوا",
+  "icon": "💡",
+  "cluster": "content-factory"
+ },
+ "cf-repurposer": {
+  "name": "بازتولید محتوا",
+  "icon": "♻️",
+  "cluster": "content-factory"
+ },
+ "cf-ad-copy": {
+  "name": "متن تبلیغاتی",
+  "icon": "📢",
+  "cluster": "content-factory"
+ },
+ "re-buyer-advisor": {
+  "name": "مشاور خریدار ملک",
+  "icon": "🏠",
+  "cluster": "real-estate-auto"
+ },
+ "re-seller-intake": {
+  "name": "دریافت ملک از مالک",
+  "icon": "📋",
+  "cluster": "real-estate-auto"
+ },
+ "re-mortgage-calc": {
+  "name": "محاسبه رهن و اجاره",
+  "icon": "🧮",
+  "cluster": "real-estate-auto"
+ },
+ "auto-car-advisor": {
+  "name": "مشاور خرید خودرو",
+  "icon": "🚗",
+  "cluster": "real-estate-auto"
+ },
+ "auto-inspection-booking": {
+  "name": "رزرو کارشناسی و بازدید",
+  "icon": "🔧",
+  "cluster": "real-estate-auto"
+ },
+ "re-lead-nurturer": {
+  "name": "پرورش سرنخ املاک/خودرو",
+  "icon": "🌿",
+  "cluster": "real-estate-auto"
+ }
+}

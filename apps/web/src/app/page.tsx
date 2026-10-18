@@ -77,8 +77,8 @@ export default function LandingPage() {
           </h1>
 
           <p className="text-[var(--text-secondary)] text-sm md:text-lg max-w-3xl mx-auto mb-8 md:mb-10 leading-relaxed">
-            <span className="text-[var(--text-primary)] font-bold">۱۳۵ ربات هوش مصنوعی</span> در{' '}
-            <span className="text-[var(--text-primary)] font-bold">۱۸ خوشه تخصصی</span> — آماده برای{' '}
+            <span className="text-[var(--text-primary)] font-bold">۱۹۰ ربات هوش مصنوعی</span> در{' '}
+            <span className="text-[var(--text-primary)] font-bold">۲۷ خوشه تخصصی</span> — آماده برای{' '}
             <span className="text-[var(--text-primary)] font-bold">۱۵ کانال ارتباطی</span>
             <br className="hidden md:block" />
             از تلگرام و ایتا تا ایمیل و پیامک. همه در یک پلتفرم.
@@ -120,8 +120,8 @@ export default function LandingPage() {
       <section className="py-10 md:py-12 px-4 md:px-6">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
           {[
-            { num: '۱۳۵', label: 'ربات هوشمند', icon: '🤖', color: '#6a8dff' },
-            { num: '۱۸', label: 'خوشه تخصصی', icon: '🏢', color: '#b46eff' },
+            { num: '۱۹۰', label: 'ربات هوشمند', icon: '🤖', color: '#6a8dff' },
+            { num: '۲۷', label: 'خوشه تخصصی', icon: '🏢', color: '#b46eff' },
             { num: '۱۵', label: 'کانال ارتباطی', icon: '📱', color: '#39d7e7' },
             { num: '۱۳', label: 'ربات پرمیوم', icon: '⭐', color: '#f59e0b' },
           ].map((s, i) => (
@@ -157,8 +157,8 @@ export default function LandingPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
             {[
-              { icon: '🤖', title: '۱۳۵ ربات آماده', desc: 'از فروش و پشتیبانی تا تحلیل و منابع انسانی — همه چیز آماده است', color: '#6a8dff' },
-              { icon: '🧠', title: '۱۸ مغز تخصصی', desc: 'هر ربات به مغز مرکزی و مغز تخصصی متصل است — هوش توزیع‌شده', color: '#39d7e7' },
+              { icon: '🤖', title: '۱۹۰ ربات آماده', desc: 'از فروش و پشتیبانی تا تحلیل و منابع انسانی — همه چیز آماده است', color: '#6a8dff' },
+              { icon: '🧠', title: '۲۷ مغز تخصصی', desc: 'هر ربات به مغز مرکزی و مغز تخصصی متصل است — هوش توزیع‌شده', color: '#39d7e7' },
               { icon: '📱', title: '۱۵ کانال ارتباطی', desc: 'تلگرام، ایتا، بله، روبیکا، واتساپ، اینستاگرام، ایمیل و پیامک', color: '#b46eff' },
               { icon: '⭐', title: '۱۳ ربات پرمیوم', desc: 'قابلیت‌های خاصی که در هیچ محصول دیگری پیدا نمی‌کنید', color: '#f59e0b' },
               { icon: '🎛️', title: 'مرکز فرمان خوشه', desc: 'به کل خوشه دستور بده — پاسخ با هوش مصنوعی بر اساس داده‌های واقعی', color: '#4ade80' },
@@ -201,7 +201,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
             {[
               { step: '۱', title: 'ثبت‌نام رایگان', desc: 'در کمتر از 1 دقیقه حساب بسازید — بدون نیاز به کارت اعتباری', color: '#6a8dff' },
-              { step: '۲', title: 'انتخاب ربات و کانال', desc: 'از میان 135 ربات و 15 کانال، انتخاب کنید و فعال کنید', color: '#b46eff' },
+              { step: '۲', title: 'انتخاب ربات و کانال', desc: 'از میان 190 ربات و 15 کانال، انتخاب کنید و فعال کنید', color: '#b46eff' },
               { step: '۳', title: 'شروع هوشمندسازی', desc: 'ربات‌ها به صورت ۲۴/۷ کار می‌کنند و شما فقط نظاره‌گر رشد باشید', color: '#4ade80' },
             ].map((s, i) => (
               <div key={i} className="text-center">

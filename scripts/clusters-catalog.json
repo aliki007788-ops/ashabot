@@ -1,0 +1,191 @@
+{
+ "sales": {
+  "name": "فروش و تبدیل",
+  "icon": "💰",
+  "color": "#4ade80",
+  "description": "جذب و تبدیل مشتریان",
+  "sort": 1
+ },
+ "lead-generation": {
+  "name": "مشتری‌یابی",
+  "icon": "🎯",
+  "color": "#6a8dff",
+  "description": "تولید و فیلتر سرنخ‌های فروش",
+  "sort": 2
+ },
+ "support": {
+  "name": "خدمات پس‌فروش",
+  "icon": "🎧",
+  "color": "#b46eff",
+  "description": "حمایت مستمر و رضایت مشتری",
+  "sort": 3
+ },
+ "finance": {
+  "name": "تسویه‌حساب و پرداخت",
+  "icon": "💳",
+  "color": "#f59e0b",
+  "description": "مدیریت مالی و پرداخت‌ها",
+  "sort": 4
+ },
+ "inventory": {
+  "name": "مدیریت موجودی",
+  "icon": "📦",
+  "color": "#10b981",
+  "description": "کنترل و بهینه‌سازی موجودی",
+  "sort": 5
+ },
+ "marketing": {
+  "name": "بازاریابی و تبلیغات",
+  "icon": "📢",
+  "color": "#ec4899",
+  "description": "افزایش آگاهی از برند",
+  "sort": 6
+ },
+ "analytics": {
+  "name": "تحلیل و گزارش‌دهی",
+  "icon": "📊",
+  "color": "#39d7e7",
+  "description": "تصمیم‌گیری داده‌محور",
+  "sort": 7
+ },
+ "hr": {
+  "name": "منابع انسانی",
+  "icon": "👥",
+  "color": "#8b5cf6",
+  "description": "مدیریت تیم و فرآیندهای داخلی",
+  "sort": 8
+ },
+ "supply-chain": {
+  "name": "زنجیره تامین",
+  "icon": "🚚",
+  "color": "#f97316",
+  "description": "لجستیک و تامین",
+  "sort": 9
+ },
+ "innovation": {
+  "name": "بهبود و نوآوری",
+  "icon": "💡",
+  "color": "#eab308",
+  "description": "بهینه‌سازی فرآیندها و توسعه",
+  "sort": 10
+ },
+ "education": {
+  "name": "آموزش و توسعه",
+  "icon": "🎓",
+  "color": "#a78bfa",
+  "description": "آموزش مشتریان، کارکنان و توسعه مهارت‌ها",
+  "sort": 11
+ },
+ "legal": {
+  "name": "حقوقی و انطباق",
+  "icon": "⚖️",
+  "color": "#64748b",
+  "description": "مدیریت قراردادها، اسناد و انطباق با قوانین",
+  "sort": 12
+ },
+ "security": {
+  "name": "امنیت و حریم خصوصی",
+  "icon": "🔒",
+  "color": "#ef4444",
+  "description": "حفاظت از داده‌ها، احراز هویت و نظارت امنیتی",
+  "sort": 13
+ },
+ "premium-learning": {
+  "name": "مربی یادگیری تطبیقی",
+  "icon": "🎓",
+  "color": "#8b5cf6",
+  "description": "یادگیری شخصی‌سازی‌شده با تطبیق لحظه‌ای مسیر آموزشی",
+  "sort": 14
+ },
+ "premium-legal": {
+  "name": "تحلیل‌گر اسناد حقوقی",
+  "icon": "📝",
+  "color": "#7c3aed",
+  "description": "تحلیل عمیق اسناد حقوقی با هوش مصنوعی پیشرفته",
+  "sort": 15
+ },
+ "premium-security": {
+  "name": "Zero-Trust Enforcer",
+  "icon": "🔒",
+  "color": "#dc2626",
+  "description": "اجرای مدل امنیتی Zero-Trust در تمام لایه‌ها",
+  "sort": 16
+ },
+ "premium-multilang": {
+  "name": "هماهنگ‌کننده چندزبانه",
+  "icon": "🌐",
+  "color": "#0891b2",
+  "description": "هماهنگی چندزبانه در تمام کانال‌ها و بخش‌ها",
+  "sort": 17
+ },
+ "premium-voice": {
+  "name": "تحلیل‌گر احساسات صوتی",
+  "icon": "📞",
+  "color": "#ea580c",
+  "description": "تحلیل احساسات در مکالمات صوتی و تماس‌ها",
+  "sort": 18
+ },
+ "knowledge-rag": {
+  "name": "پشتیبان دانش‌محور (RAG)",
+  "icon": "📚",
+  "color": "#22d3ee",
+  "description": "ربات‌هایی که فقط از روی اسناد و سایت شما پاسخ می‌دهند؛ با منبع و بدون حدس",
+  "sort": 19
+ },
+ "conversational-commerce": {
+  "name": "فروشگاه گفتگومحور",
+  "icon": "🛍️",
+  "color": "#f472b6",
+  "description": "کاتالوگ، سبد خرید، پرداخت آنلاین و بازیابی سبد در پیام‌رسان‌ها",
+  "sort": 20
+ },
+ "instagram-automation": {
+  "name": "اتوماسیون دایرکت و کامنت",
+  "icon": "📷",
+  "color": "#e1306c",
+  "description": "پاسخ خودکار دایرکت و کامنت، تبدیل مخاطب به سرنخ و پیگیری",
+  "sort": 21
+ },
+ "booking-appointments": {
+  "name": "نوبت‌دهی و رزرو",
+  "icon": "📅",
+  "color": "#34d399",
+  "description": "رزرو نوبت کلینیک، سالن، رستوران و هتل؛ یادآوری و کاهش no-show",
+  "sort": 22
+ },
+ "voice-agents": {
+  "name": "عامل تماس صوتی",
+  "icon": "🎙️",
+  "color": "#fb923c",
+  "description": "سناریو و اسکریپت تماس ورودی/خروجی برای مرکز تماس هوشمند",
+  "sort": 23
+ },
+ "recruitment": {
+  "name": "استخدام هوشمند",
+  "icon": "🧑‍💼",
+  "color": "#a78bfa",
+  "description": "غربال رزومه، مصاحبه اولیه، زمان‌بندی و ارزیابی",
+  "sort": 24
+ },
+ "accounting-invoicing": {
+  "name": "فاکتور و حسابداری",
+  "icon": "🧾",
+  "color": "#facc15",
+  "description": "صدور فاکتور، دسته‌بندی هزینه، یادآوری بدهی و آمادگی مالیاتی",
+  "sort": 25
+ },
+ "content-factory": {
+  "name": "کارخانه محتوا",
+  "icon": "🎬",
+  "color": "#60a5fa",
+  "description": "ایده، کپشن، اسکریپت ریلز، سئو و تقویم محتوا",
+  "sort": 26
+ },
+ "real-estate-auto": {
+  "name": "املاک و خودرو",
+  "icon": "🏠",
+  "color": "#2dd4bf",
+  "description": "دریافت نیاز خریدار/فروشنده، فیلتر آگهی، هماهنگی بازدید",
+  "sort": 27
+ }
+}

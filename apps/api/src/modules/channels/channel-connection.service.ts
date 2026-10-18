@@ -347,7 +347,7 @@ export class ChannelConnectionService {
   // ==================== HELPERS ====================
 
   private _getChannelIcon(type: ChannelType): string {
-    const icons: Record<ChannelType, string> = {
+    const icons: Partial<Record<ChannelType, string>> = {
       eitaa: '📡',
       telegram: '📱',
       whatsapp: '💬',

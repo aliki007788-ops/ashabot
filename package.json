@@ -15,7 +15,11 @@
     "db:down": "docker compose down",
     "db:migrate": "pnpm --filter @bot-platform/api prisma migrate dev",
     "db:studio": "pnpm --filter @bot-platform/api prisma studio",
-    "db:seed": "pnpm --filter @bot-platform/api prisma db seed"
+    "db:seed": "pnpm --filter @bot-platform/api prisma db seed",
+    "ws:gen": "node scripts/gen-workspaces.cjs",
+    "kit:sync": "node scripts/kit-sync.cjs",
+    "kit:check": "node scripts/kit-check.cjs",
+    "pack:workspace": "node scripts/pack-workspace.cjs"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

@@ -46,3 +46,18 @@ jobs:
 
       # - name: Unit tests
       #   run: pnpm test
+
+  kit:
+    name: Workspace Kit Sync Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Verify every workspace uses the master kit
+        run: node scripts/kit-check.cjs

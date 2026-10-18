@@ -1,0 +1,20 @@
+FROM node:20-slim
+RUN apt-get update && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/web/package.json apps/web/package.json
+RUN pnpm install --frozen-lockfile --filter @bot-platform/api...
+
+COPY apps/api apps/api
+WORKDIR /app/apps/api
+RUN pnpm exec prisma generate
+# tsc حتی با خطای نوع، فایل خروجی می‌سازد؛ فقط وجود dist/server.js را بررسی می‌کنیم
+RUN pnpm exec tsc ; test -f dist/server.js
+
+ENV NODE_ENV=production
+EXPOSE 4000
+CMD ["pnpm", "run", "start:prod"]

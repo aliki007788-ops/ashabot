@@ -1,0 +1,15 @@
+# DOMAIN خالی = HTTP روی پورت 80 (برای IP). اگر دامنه بگذارید، HTTPS خودکار می‌گیرد.
+{$DOMAIN::80} {
+	encode gzip
+
+	@backend path /api/* /health /socket.io/*
+	handle @backend {
+		reverse_proxy api:4000 {
+			flush_interval -1
+		}
+	}
+
+	handle {
+		reverse_proxy web:3000
+	}
+}

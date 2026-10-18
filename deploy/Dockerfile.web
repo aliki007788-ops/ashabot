@@ -1,0 +1,20 @@
+FROM node:20-slim
+RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
+WORKDIR /app
+
+COPY package.json pnpm-workspace.yaml pnpm-lock.yaml .npmrc ./
+COPY apps/api/package.json apps/api/package.json
+COPY apps/web/package.json apps/web/package.json
+RUN pnpm install --frozen-lockfile --filter @bot-platform/web...
+
+COPY apps/web apps/web
+WORKDIR /app/apps/web
+# این آدرس موقع build داخل کد قرار می‌گیرد (آدرس عمومی سایت)
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN pnpm exec next build
+
+ENV NODE_ENV=production
+EXPOSE 3000
+CMD ["pnpm", "exec", "next", "start", "-p", "3000"]

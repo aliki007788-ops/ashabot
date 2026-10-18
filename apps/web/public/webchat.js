@@ -607,6 +607,38 @@
     setTimeout(() => errorEl.remove(), 5000);
   }
 
+  // ==================== HUMAN HANDOFF POLLING ====================
+
+  let handoffNotified = false;
+  let pollTimer = null;
+  let lastPoll = new Date().toISOString();
+
+  function startPolling() {
+    if (pollTimer) return;
+    pollTimer = setInterval(async () => {
+      try {
+        const r = await fetch(
+          `${CONFIG.apiUrl}/api/inbox/poll/${encodeURIComponent(getSessionId())}?after=${encodeURIComponent(lastPoll)}`
+        );
+        if (!r.ok) return;
+        const d = await r.json();
+        for (const m of d.items || []) {
+          lastPoll = m.createdAt;
+          if (m.role === 'HUMAN') {
+            messages.push({ role: 'bot', content: m.content, timestamp: m.createdAt });
+            if (!isOpen) unreadCount++;
+          }
+        }
+        if ((d.items || []).length) { renderMessages(); updateUI(); }
+        if (d.status === 'BOT' || d.status === 'CLOSED') {
+          clearInterval(pollTimer);
+          pollTimer = null;
+          handoffNotified = false;
+        }
+      } catch (_) {}
+    }, 4000);
+  }
+
   // ==================== SEND MESSAGE ====================
 
   async function sendMessage() {
@@ -656,11 +688,22 @@
 
       const data = await response.json();
 
-      messages.push({
-        role: 'bot',
-        content: data.message || data.response || data.content || 'پاسخی دریافت نشد',
-        timestamp: new Date().toISOString(),
-      });
+      if (data.handoff) {
+        // گفتگو دست اپراتور انسانی است؛ پیام‌های او با polling دریافت می‌شود
+        if (data.message) {
+          messages.push({ role: 'bot', content: data.message, timestamp: new Date().toISOString() });
+        } else if (!handoffNotified) {
+          messages.push({ role: 'bot', content: 'پیام شما برای همکار ما ارسال شد؛ به‌زودی پاسخ می‌دهیم. 🙏', timestamp: new Date().toISOString() });
+        }
+        handoffNotified = true;
+        startPolling();
+      } else {
+        messages.push({
+          role: 'bot',
+          content: data.message || data.response || data.content || 'پاسخی دریافت نشد',
+          timestamp: new Date().toISOString(),
+        });
+      }
 
       if (!isOpen) {
         unreadCount++;

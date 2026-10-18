@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, extractError } from '@/lib/api';
+import { workspaces } from '@/workspaces/registry';
 
 // ============================================================
 // Interfaces
@@ -216,6 +217,7 @@ export default function ClusterDetailPage() {
   const [commandInput, setCommandInput] = useState('');
   const [commandLoading, setCommandLoading] = useState(false);
   const [liveMode, setLiveMode] = useState(true);
+  const [view, setView] = useState<'workspace' | 'overview'>('workspace');
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -350,12 +352,39 @@ export default function ClusterDetailPage() {
               >
                 {liveMode ? '● زنده' : '○ غیرفعال'}
               </button>
+              {workspaces[cluster.slug] && (
+                <div className="flex items-center gap-1 rounded-full border border-white/10 p-0.5 text-xs font-bold">
+                  {(
+                    [
+                      ['workspace', '🖥️ میزکار'],
+                      ['overview', '📊 نمای کلی'],
+                    ] as const
+                  ).map(([id, label]) => (
+                    <button
+                      key={id}
+                      onClick={() => setView(id)}
+                      className="px-3 py-1 rounded-full transition"
+                      style={view === id ? { background: cluster.color, color: '#07122e' } : { color: 'rgba(255,255,255,.6)' }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
             <p className="text-white/50 mt-2 max-w-2xl">{cluster.description}</p>
           </div>
         </div>
       </div>
 
+      {/* ============ میزکار اختصاصی خوشه (داخل خود خوشه) ============ */}
+      {workspaces[cluster.slug] && view === 'workspace' && (() => {
+        const Workspace = workspaces[cluster.slug].Component;
+        return <Workspace embedded />;
+      })()}
+
+      {(!workspaces[cluster.slug] || view === 'overview') && (
+        <>
       {/* ============ Live Stats ============ */}
       {stats && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -568,6 +597,8 @@ export default function ClusterDetailPage() {
           </div>
         )}
       </div>
+        </>
+      )}
     </div>
   );
 }

@@ -49,7 +49,7 @@ export async function aiRoutes(app: FastifyInstance) {
 
       return response;
     } catch (err: any) {
-      app.log.error('[WebChat] خطا:', err);
+      app.log.error({ err }, '[WebChat] خطا:');
 
       if (err.name === 'ZodError') {
         return reply.code(400).send({
@@ -71,12 +71,18 @@ export async function aiRoutes(app: FastifyInstance) {
     return service.chat({
       ...input,
       userId: request.user.sub,
-    });
+    } as any);
   });
 
   app.post('/chat/stream', { preHandler: [app.authenticate] }, async (request, reply) => {
     const input = chatSchema.parse(request.body);
 
+    const origin = request.headers.origin;
+    if (origin) {
+      reply.raw.setHeader('Access-Control-Allow-Origin', origin);
+      reply.raw.setHeader('Access-Control-Allow-Credentials', 'true');
+      reply.raw.setHeader('Vary', 'Origin');
+    }
     reply.raw.setHeader('Content-Type', 'text/event-stream');
     reply.raw.setHeader('Cache-Control', 'no-cache');
     reply.raw.setHeader('Connection', 'keep-alive');
@@ -85,7 +91,7 @@ export async function aiRoutes(app: FastifyInstance) {
       for await (const chunk of service.chatStream({
         ...input,
         userId: request.user.sub,
-      })) {
+      } as any)) {
         reply.raw.write(`data: ${JSON.stringify(chunk)}\n\n`);
       }
       reply.raw.write('data: [DONE]\n\n');

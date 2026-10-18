@@ -1,14 +1,34 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
+const NAV = [
+  { href: '/dashboard', label: 'داشبورد' },
+  { href: '/clusters', label: 'خوشه‌ها' },
+  { href: '/w', label: 'میزکارها' },
+  { href: '/bots', label: 'ربات‌ها' },
+  { href: '/marketplace', label: 'فروشگاه قالب' },
+  { href: '/knowledge', label: 'دانش' },
+  { href: '/inbox', label: 'صندوق گفتگو' },
+  { href: '/crm', label: 'CRM' },
+  { href: '/bookings', label: 'نوبت‌ها' },
+  { href: '/payments', label: 'پرداخت‌ها' },
+  { href: '/workflows', label: 'اتوماسیون' },
+  { href: '/evals', label: 'تست کیفیت' },
+  { href: '/channels', label: 'کانال‌ها' },
+  { href: '/brains', label: 'مغزها' },
+  { href: '/settings', label: 'تنظیمات' },
+];
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout } = useAuth();
   const router = useRouter();
+  const pathname = usePathname();
 
   useEffect(() => {
     if (!loading && !user) router.push('/login');
@@ -53,6 +73,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </Button>
           </div>
         </div>
+        <nav className="max-w-7xl mx-auto px-6 pb-2 flex gap-1 overflow-x-auto text-sm">
+          {NAV.map((n) => {
+            const active = pathname === n.href || pathname.startsWith(n.href + '/');
+            return (
+              <Link
+                key={n.href}
+                href={n.href}
+                className={
+                  'px-3 py-1.5 rounded-lg whitespace-nowrap transition ' +
+                  (active
+                    ? 'bg-white/10 text-white font-bold'
+                    : 'text-[var(--text-secondary)] hover:bg-white/5')
+                }
+              >
+                {n.label}
+              </Link>
+            );
+          })}
+        </nav>
       </header>
       <main className="max-w-7xl mx-auto p-6">{children}</main>
     </div>

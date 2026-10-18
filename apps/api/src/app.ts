@@ -22,6 +22,15 @@ import { channelsConfigRoutes } from './modules/channels/channels.config.js';
 import { webhooksRoutes } from './modules/channels/webhooks.routes.js';
 import { activityRoutes } from './modules/activity/activity.routes.js';
 import { dashboardRoutes } from './modules/dashboard/dashboard.routes.js';
+import { knowledgeRoutes } from './modules/knowledge/knowledge.routes.js';
+import { inboxRoutes } from './modules/inbox/inbox.routes.js';
+import { crmRoutes } from './modules/crm/crm.routes.js';
+import { bookingsRoutes } from './modules/bookings/bookings.routes.js';
+import { paymentsRoutes } from './modules/payments/payments.routes.js';
+import { workflowsRoutes } from './modules/workflows/workflows.routes.js';
+import { marketplaceRoutes } from './modules/marketplace/marketplace.routes.js';
+import { evalsRoutes } from './modules/evals/evals.routes.js';
+import { TOOL_NAMES } from './modules/tools/tools.registry.js';
 import { WebChatAdapter } from './modules/channels/adapters/webchat.adapter.js';
 
 export async function buildApp() {
@@ -52,9 +61,11 @@ export async function buildApp() {
         return callback(null, true);
       }
 
+      const configured = env.CORS_ORIGIN.split(',').map((s) => s.trim().replace(/\/$/, ''));
       if (
+        configured.includes('*') ||
         allowedOrigins.includes(origin) ||
-        env.CORS_ORIGIN.split(',').map((s) => s.trim()).includes(origin)
+        configured.includes(origin.replace(/\/$/, ''))
       ) {
         return callback(null, true);
       }
@@ -98,6 +109,22 @@ export async function buildApp() {
     timestamp: new Date().toISOString(),
   }));
 
+  // آمار سریع برای عیب‌یابی دیپلوی (عمومی، بدون داده حساس)
+  app.get('/api/meta', async () => {
+    const [clusters, bots, templates] = await Promise.all([
+      app.prisma.cluster.count(),
+      app.prisma.bot.count(),
+      app.prisma.bot.count({ where: { userId: null } }),
+    ]);
+    return { clusters, bots, templates, version: '2.0.0' };
+  });
+
+  app.get('/', async () => ({
+    name: 'ashabot-api',
+    status: 'running',
+    health: '/health',
+  }));
+
   // ==================== API ROUTES ====================
   await app.register(authRoutes, { prefix: '/api/auth' });
   await app.register(aiRoutes, { prefix: '/api/ai' });
@@ -111,6 +138,17 @@ export async function buildApp() {
   await app.register(channelsConfigRoutes, { prefix: '/api/channels' });
   await app.register(activityRoutes, { prefix: '/api/activity' });
   await app.register(dashboardRoutes, { prefix: '/api/dashboard' });
+
+  // ==================== NEW MODULES ====================
+  await app.register(knowledgeRoutes, { prefix: '/api/knowledge' });
+  await app.register(inboxRoutes, { prefix: '/api/inbox' });
+  await app.register(crmRoutes, { prefix: '/api/crm' });
+  await app.register(bookingsRoutes, { prefix: '/api/bookings' });
+  await app.register(paymentsRoutes, { prefix: '/api/payments' });
+  await app.register(workflowsRoutes, { prefix: '/api/workflows' });
+  await app.register(marketplaceRoutes, { prefix: '/api/marketplace' });
+  await app.register(evalsRoutes, { prefix: '/api/evals' });
+  app.get('/api/tools', async () => ({ items: TOOL_NAMES }));
 
   // ==================== WEBHOOK ROUTES ====================
   await app.register(webhooksRoutes, { prefix: '/api/webhooks' });

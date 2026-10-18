@@ -302,7 +302,7 @@ ${runsList}
           },
         };
       } catch (error: any) {
-        app.log.error('Cluster command AI error:', error);
+        app.log.error({ err: error }, 'Cluster command AI error:');
 
         await prisma.clusterCommand.update({
           where: { id: cmd.id },
@@ -330,5 +330,50 @@ ${runsList}
     });
 
     return { items: commands };
+  });
+
+  // ==================== PROCESS RUNS (میزکار فرایندمحور) ====================
+  app.get('/:slug/process-runs', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const items = await prisma.clusterOutput.findMany({
+      where: { clusterId: cluster.id, type: 'PROCESS_RUN' },
+      orderBy: { createdAt: 'desc' },
+      take: 60,
+    });
+    return { items };
+  });
+
+  app.post('/:slug/process-runs', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const body = (request.body ?? {}) as {
+      input?: string;
+      status?: string;
+      ms?: number;
+      summary?: string;
+      origin?: string;
+      startedAt?: number;
+      states?: unknown;
+    };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    let metadata = JSON.stringify({ origin: body.origin ?? 'manual', startedAt: body.startedAt ?? Date.now(), states: body.states ?? {} });
+    if (metadata.length > 30000) {
+      metadata = JSON.stringify({ origin: body.origin ?? 'manual', startedAt: body.startedAt ?? Date.now(), states: {} });
+    }
+    const row = await prisma.clusterOutput.create({
+      data: {
+        clusterId: cluster.id,
+        type: 'PROCESS_RUN',
+        title: String(body.input ?? '').slice(0, 200) || 'پرونده',
+        description: body.summary ? String(body.summary).slice(0, 500) : null,
+        value: typeof body.ms === 'number' ? body.ms : null,
+        unit: 'ms',
+        status: body.status === 'FAILED' ? 'FAILED' : 'SUCCESS',
+        metadata,
+      },
+    });
+    return { id: row.id };
   });
 }

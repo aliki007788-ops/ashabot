@@ -55,7 +55,7 @@ export async function channelsRoutes(app: FastifyInstance) {
 
       if (!bot) return reply.code(404).send({ error: 'ربات یافت نشد یا دسترسی ندارید' });
 
-      const connection = await connectionService.create(input);
+      const connection = await connectionService.create(input as any);
       return reply.code(201).send({ success: true, connection, message: 'اتصال با موفقیت ایجاد شد' });
     } catch (error) {
       app.log.error(error);
@@ -233,7 +233,7 @@ export async function channelsRoutes(app: FastifyInstance) {
         text: input.text,
         parseMode: input.parseMode,
         replyToMessageId: input.replyToMessageId,
-        buttons: input.buttons,
+        buttons: input.buttons as any,
       });
 
       return result;

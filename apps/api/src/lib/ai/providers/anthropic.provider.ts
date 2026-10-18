@@ -32,10 +32,22 @@ export class AnthropicProvider implements LLMProvider {
       messages: formatted,
       temperature: options.temperature ?? 0.7,
       max_tokens: options.maxTokens ?? 1024,
+      tools: options.tools?.length
+        ? options.tools.map((t) => ({
+            name: t.name,
+            description: t.description,
+            input_schema: t.parameters as any,
+          }))
+        : undefined,
     });
 
-    const textBlock = response.content.find((b) => b.type === 'text');
-    const content = textBlock && textBlock.type === 'text' ? textBlock.text : '';
+    const content = response.content
+      .filter((b: any) => b.type === 'text')
+      .map((b: any) => b.text)
+      .join('');
+    const toolCalls = response.content
+      .filter((b: any) => b.type === 'tool_use')
+      .map((b: any) => ({ id: b.id, name: b.name, arguments: b.input || {} }));
 
     return {
       content,
@@ -48,7 +60,13 @@ export class AnthropicProvider implements LLMProvider {
       ),
       model: options.model,
       provider: this.name,
-      finishReason: response.stop_reason === 'end_turn' ? 'stop' : 'length',
+      toolCalls: toolCalls.length ? toolCalls : undefined,
+      finishReason:
+        response.stop_reason === 'tool_use'
+          ? 'tool_calls'
+          : response.stop_reason === 'end_turn'
+            ? 'stop'
+            : 'length',
     };
   }
 
@@ -80,7 +98,22 @@ export class AnthropicProvider implements LLMProvider {
     const formatted: Anthropic.MessageParam[] = [];
 
     for (const msg of messages) {
-      if (msg.role === 'user' || msg.role === 'assistant') {
+      if (msg.role === 'assistant' && msg.toolCalls?.length) {
+        const blocks: any[] = [];
+        if (msg.content) blocks.push({ type: 'text', text: msg.content });
+        for (const tc of msg.toolCalls) {
+          blocks.push({ type: 'tool_use', id: tc.id, name: tc.name, input: tc.arguments });
+        }
+        formatted.push({ role: 'assistant', content: blocks });
+      } else if (msg.role === 'tool') {
+        const block = { type: 'tool_result', tool_use_id: msg.toolCallId, content: msg.content };
+        const last: any = formatted[formatted.length - 1];
+        if (last && last.role === 'user' && Array.isArray(last.content)) {
+          last.content.push(block);
+        } else {
+          formatted.push({ role: 'user', content: [block] as any });
+        }
+      } else if (msg.role === 'user' || msg.role === 'assistant') {
         formatted.push({ role: msg.role, content: msg.content });
       }
     }

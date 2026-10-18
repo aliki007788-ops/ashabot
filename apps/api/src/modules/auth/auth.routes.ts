@@ -7,7 +7,7 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.post('/register', async (request, reply) => {
     const input = registerSchema.parse(request.body);
-    const result = await service.register(input);
+    const result = await service.register(input as any);
     return { user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken };
   });
 
@@ -17,7 +17,7 @@ export async function authRoutes(app: FastifyInstance) {
       userAgent: request.headers['user-agent'],
       ipAddress: request.ip,
     };
-    const result = await service.login(input, meta);
+    const result = await service.login(input as any, meta);
     return { user: result.user, accessToken: result.accessToken, refreshToken: result.refreshToken };
   });
 

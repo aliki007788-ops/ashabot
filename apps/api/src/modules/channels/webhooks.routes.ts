@@ -38,9 +38,7 @@ export async function webhooksRoutes(app: FastifyInstance) {
     async (req: FastifyRequest<{ Params: WebhookParams }>, reply: FastifyReply) => {
       const { channelType, connectionId } = req.params;
 
-      app.log.info(`Webhook verification: ${channelType}/${connectionId}`, {
-        query: req.query,
-      });
+      app.log.info({ query: req.query }, `Webhook verification: ${channelType}/${connectionId}`);
 
       // بررسی نوع کانال
       if (!isValidChannelType(channelType)) {
@@ -103,7 +101,7 @@ export async function webhooksRoutes(app: FastifyInstance) {
           processed: result.processed,
         });
       } catch (error) {
-        app.log.error(`Webhook processing error: ${channelType}/${connectionId}`, error);
+        app.log.error({ err: error }, `Webhook processing error: ${channelType}/${connectionId}`);
 
         // حتی در صورت خطا، 200 برگردان تا سرویس خارجی دوباره تلاش نکند
         return reply.code(200).send({
@@ -152,7 +150,7 @@ export async function webhooksRoutes(app: FastifyInstance) {
 
       return reply.code(200).send({ ok: true, processed: result.processed });
     } catch (error) {
-      app.log.error('Eitaa webhook error', error);
+      app.log.error({ err: error }, 'Eitaa webhook error');
       return reply.code(200).send({ ok: true, processed: false });
     }
   });
@@ -195,7 +193,7 @@ export async function webhooksRoutes(app: FastifyInstance) {
 
         return reply.code(200).send({ ok: true, processed: result.processed });
       } catch (error) {
-        app.log.error('Telegram webhook error', error);
+        app.log.error({ err: error }, 'Telegram webhook error');
         return reply.code(200).send({ ok: true, processed: false });
       }
     }
@@ -238,7 +236,7 @@ export async function webhooksRoutes(app: FastifyInstance) {
 
       return reply.code(200).send({ ok: true, processed: result.processed });
     } catch (error) {
-      app.log.error('WebChat webhook error', error);
+      app.log.error({ err: error }, 'WebChat webhook error');
       return reply.code(200).send({ ok: true, processed: false });
     }
   });

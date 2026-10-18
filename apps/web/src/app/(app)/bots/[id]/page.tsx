@@ -4,6 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { api, extractError } from '@/lib/api';
+import { BotSettings } from '@/components/BotSettings';
 
 // ============================================================
 // Interfaces
@@ -21,6 +22,7 @@ interface Bot {
   isPremium: boolean;
   isActive: boolean;
   isTemplate: boolean;
+  tools?: string;
   createdAt: string;
   cluster?: {
     id: string;
@@ -318,6 +320,8 @@ export default function BotDetailPage() {
                 {bot.systemPrompt}
               </div>
             </div>
+
+            <BotSettings bot={bot} />
 
             {/* Recent Messages */}
             {stats && stats.recentMessages.length > 0 && (
