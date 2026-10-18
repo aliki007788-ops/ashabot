@@ -1,4 +1,4 @@
-import Fastify from 'fastify';
+﻿import Fastify from 'fastify';
 import cors from '@fastify/cors';
 import helmet from '@fastify/helmet';
 import rateLimit from '@fastify/rate-limit';
@@ -32,6 +32,7 @@ import { marketplaceRoutes } from './modules/marketplace/marketplace.routes.js';
 import { evalsRoutes } from './modules/evals/evals.routes.js';
 import { TOOL_NAMES } from './modules/tools/tools.registry.js';
 import { WebChatAdapter } from './modules/channels/adapters/webchat.adapter.js';
+import { adminImportRoutes } from './modules/admin/import.routes.js';
 
 export async function buildApp() {
   const app = Fastify({
@@ -152,6 +153,9 @@ export async function buildApp() {
 
   // ==================== WEBHOOK ROUTES ====================
   await app.register(webhooksRoutes, { prefix: '/api/webhooks' });
+
+  // ==================== TEMP: Admin Import (remove after use) ====================
+  await app.register(adminImportRoutes, { prefix: '/api/admin' });
 
   return app;
 }

@@ -10,9 +10,6 @@ jobs:
   api:
     name: API Build & Check
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: apps/api   # اختیاری ولی تمیزتر
 
     steps:
       - name: Checkout
@@ -25,19 +22,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'pnpm'
+          cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-        working-directory: .          # چون lockfile در root است
 
       - name: Generate Prisma Client
+        working-directory: apps/api
         run: npx prisma generate
         env:
           DATABASE_URL: "postgresql://user:pass@localhost:5432/db"
 
       - name: TypeScript check
+        working-directory: apps/api
         run: npx tsc --noEmit
 
       # پیشنهادهای اضافه (اختیاری ولی مفید):
