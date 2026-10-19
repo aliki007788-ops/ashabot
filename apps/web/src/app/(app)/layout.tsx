@@ -11,6 +11,7 @@ const NAV = [
   { href: '/dashboard', label: 'داشبورد' },
   { href: '/clusters', label: 'خوشه‌ها' },
   { href: '/w', label: 'میزکارها' },
+  { href: '/runs', label: 'پرونده‌ها' },
   { href: '/bots', label: 'ربات‌ها' },
   { href: '/marketplace', label: 'فروشگاه قالب' },
   { href: '/knowledge', label: 'دانش' },

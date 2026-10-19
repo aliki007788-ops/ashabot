@@ -19,6 +19,8 @@ import {
   Spinner,
   StatCard,
   ProcessConsole,
+  RunsExplorer,
+  GoalsPanel,
   WorkspaceShell,
   inboxSource,
   ownIds,
@@ -176,6 +178,8 @@ export default function InvoicingWorkspace(props: { embedded?: boolean }) {
       accent={manifest.accent}
       tabs={[
         { id: 'process', label: '🧭 فرایند زنده' },
+    { id: 'runs', label: '📂 پرونده‌ها' },
+    { id: 'goals', label: '🎯 اهداف' },
         { id: 'overview', label: 'نمای کلی' },
         { id: 'new', label: 'فاکتور جدید' },
         { id: 'list', label: 'تراکنش‌ها', badge: items.length },
@@ -198,6 +202,10 @@ export default function InvoicingWorkspace(props: { embedded?: boolean }) {
       )}
       {tab === 'process' ? (
         <ProcessConsole slug={manifest.slug} def={processDef} makeSource={makeSource} />
+      ) : tab === 'runs' ? (
+        <RunsExplorer slug={manifest.slug} def={processDef} />
+      ) : tab === 'goals' ? (
+        <GoalsPanel slug={manifest.slug} def={processDef} />
       ) : loading && !data ? (
         <Spinner />
       ) : (

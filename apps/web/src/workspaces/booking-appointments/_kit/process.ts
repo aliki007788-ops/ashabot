@@ -52,6 +52,25 @@ export interface StageState {
 
 export type RunOrigin = 'manual' | 'auto' | 'event';
 
+/** یک گام از مسیر پرونده؛ خودبسنده است تا بعد از تغییر تعریف فرایند هم قابل نمایش بماند */
+export interface TrailItem {
+  id: string;
+  title: string;
+  botName: string;
+  icon: string;
+  status: StageStatus;
+  source?: StageSource;
+  ms?: number;
+  output?: string;
+  note?: string;
+}
+
+export interface RunLogLine {
+  t: number;
+  text: string;
+  tone: 'ok' | 'warn' | 'bad' | 'info' | 'mute';
+}
+
 export interface RunRecord {
   id: string;
   startedAt: number;
@@ -61,6 +80,11 @@ export interface RunRecord {
   states: Record<string, StageState>;
   ms?: number;
   summary?: string;
+  /** مسیر کامل پرونده: هر ربات چه کرد و چه خروجی داد */
+  trail?: TrailItem[];
+  log?: RunLogLine[];
+  /** فقط در نمای «همه‌ی خوشه‌ها» */
+  cluster?: { slug: string; name: string; icon: string; color: string };
 }
 
 export interface LogEntry {
@@ -235,6 +259,29 @@ export function layoutProcess(def: ProcessDef): Layout {
   const waves: StageDef[][] = [];
   for (let l = 1; l <= maxLevel; l++) if (rowsAt[l].length) waves.push(rowsAt[l]);
   return { nodes, edges, width, height, levelOf, waves };
+}
+
+/** مسیر پرونده به ترتیب اجرا (سطح‌به‌سطح) برای نمایش خط زمانی */
+export function buildTrail(def: ProcessDef, states: Record<string, StageState>): TrailItem[] {
+  const out: TrailItem[] = [];
+  for (const wave of layoutProcess(def).waves) {
+    for (const st of wave) {
+      const s = states[st.id];
+      if (!s || s.status === 'idle') continue;
+      out.push({
+        id: st.id,
+        title: st.title,
+        botName: s.by ?? st.botName,
+        icon: st.icon,
+        status: s.status,
+        source: s.source,
+        ms: s.ms,
+        output: s.output ? s.output.slice(0, 700) : undefined,
+        note: s.note,
+      });
+    }
+  }
+  return out;
 }
 
 /* ───────────── اجرا ───────────── */
@@ -417,34 +464,54 @@ export async function saveRun(slug: string, r: RunRecord): Promise<void> {
       origin: r.origin,
       startedAt: r.startedAt,
       states: r.states,
+      trail: r.trail ?? [],
+      log: (r.log ?? []).slice(-60),
     });
   } catch {
     /* ثبت اختیاری است؛ نبودنش اجرا را خراب نمی‌کند */
   }
 }
 
+export interface RunsQuery {
+  q?: string;
+  status?: 'SUCCESS' | 'FAILED';
+  origin?: RunOrigin;
+  skip?: number;
+  take?: number;
+}
+
+function parseRun(it: ServerRun & { cluster?: RunRecord['cluster'] }): RunRecord {
+  let meta: { origin?: RunOrigin; states?: Record<string, StageState>; startedAt?: number; trail?: TrailItem[]; log?: RunLogLine[] } = {};
+  try {
+    meta = it.metadata ? (JSON.parse(it.metadata) as typeof meta) : {};
+  } catch {
+    meta = {};
+  }
+  return {
+    id: it.id,
+    startedAt: meta.startedAt ?? new Date(it.createdAt).getTime(),
+    input: it.title,
+    origin: meta.origin ?? 'manual',
+    status: it.status === 'FAILED' ? 'error' : 'done',
+    states: meta.states ?? {},
+    ms: it.value ?? undefined,
+    summary: it.description ?? undefined,
+    trail: meta.trail,
+    log: meta.log,
+    cluster: it.cluster,
+  };
+}
+
+/** فهرست پرونده‌ها با فیلتر و صفحه‌بندی؛ slug = 'all' یعنی همه‌ی خوشه‌ها */
+export async function fetchRuns(slug: string, query: RunsQuery = {}): Promise<{ items: RunRecord[]; total: number }> {
+  const r = await api.get(`/api/clusters/${slug}/process-runs`, { params: query });
+  const items = (r.data.items ?? []) as Array<ServerRun & { cluster?: RunRecord['cluster'] }>;
+  return { items: items.map(parseRun), total: Number(r.data.total ?? items.length) };
+}
+
 export async function loadRuns(slug: string): Promise<RunRecord[]> {
   try {
-    const r = await api.get(`/api/clusters/${slug}/process-runs`);
-    const items = (r.data.items ?? []) as ServerRun[];
-    return items.map((it) => {
-      let meta: { origin?: RunOrigin; states?: Record<string, StageState>; startedAt?: number } = {};
-      try {
-        meta = it.metadata ? (JSON.parse(it.metadata) as typeof meta) : {};
-      } catch {
-        meta = {};
-      }
-      return {
-        id: it.id,
-        startedAt: meta.startedAt ?? new Date(it.createdAt).getTime(),
-        input: it.title,
-        origin: meta.origin ?? 'manual',
-        status: it.status === 'FAILED' ? 'error' : 'done',
-        states: meta.states ?? {},
-        ms: it.value ?? undefined,
-        summary: it.description ?? undefined,
-      } as RunRecord;
-    });
+    return (await fetchRuns(slug, { take: 60 })).items;
   } catch {
     return [];
   }

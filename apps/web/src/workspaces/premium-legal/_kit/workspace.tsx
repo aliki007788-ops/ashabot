@@ -6,6 +6,8 @@ import type { ReactNode } from 'react';
 import { api } from '@/lib/api';
 import { AssistantPanel } from './assistant';
 import { ProcessConsole } from './process-ui';
+import { RunsExplorer } from './runs-ui';
+import { GoalsPanel } from './goals';
 import type { AutoSource, BotIndex, Executor, ProcessDef } from './process';
 import { Badge, Empty, ErrorBanner, Panel, Spinner, WorkspaceShell } from './ui';
 import type { Tone } from './ui';
@@ -87,6 +89,8 @@ export function ProcessWorkspace(props: {
   const tabs = [
     { id: 'process', label: '🧭 فرایند زنده' },
     ...(props.extraTabs ?? []).map((t) => ({ id: t.id, label: t.label })),
+    { id: 'runs', label: '📂 پرونده‌ها' },
+    { id: 'goals', label: '🎯 اهداف' },
     { id: 'bots', label: '🤖 ربات‌های خوشه' },
     { id: 'assistant', label: '💬 دستیار' },
   ];
@@ -95,6 +99,8 @@ export function ProcessWorkspace(props: {
     <WorkspaceShell icon={manifest.icon} title={manifest.title} subtitle={manifest.tagline} accent={manifest.accent} tabs={tabs} tab={tab} onTab={setTab} embedded={props.embedded}>
       {tab === 'process' && <ProcessConsole slug={manifest.slug} def={def} executors={props.executors} makeSource={props.makeSource} />}
       {extra && extra.render()}
+      {tab === 'runs' && <RunsExplorer slug={manifest.slug} def={def} />}
+      {tab === 'goals' && <GoalsPanel slug={manifest.slug} def={def} />}
       {tab === 'bots' && (
         <Panel title="ربات‌های این خوشه" subtitle="هر ربات و جایگاهش در مسیر فرایند">
           <ClusterBots slug={manifest.slug} def={def} />

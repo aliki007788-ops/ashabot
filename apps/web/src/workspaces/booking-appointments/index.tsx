@@ -19,6 +19,8 @@ import {
   Spinner,
   StatCard,
   ProcessConsole,
+  RunsExplorer,
+  GoalsPanel,
   WorkspaceShell,
   inboxSource,
   ownIds,
@@ -224,6 +226,8 @@ export default function BookingWorkspace(props: { embedded?: boolean }) {
   /* ───── tabs ───── */
   const tabs = [
     { id: 'process', label: '🧭 فرایند زنده' },
+    { id: 'runs', label: '📂 پرونده‌ها' },
+    { id: 'goals', label: '🎯 اهداف' },
     { id: 'today', label: 'امروز', badge: todays.length },
     { id: 'week', label: 'تقویم هفتگی' },
     { id: 'all', label: 'همه نوبت‌ها', badge: items.length },
@@ -253,6 +257,10 @@ export default function BookingWorkspace(props: { embedded?: boolean }) {
       <ErrorBanner message={error} onRetry={() => void reload()} />
       {tab === 'process' ? (
         <ProcessConsole slug={manifest.slug} def={processDef} makeSource={makeSource} />
+      ) : tab === 'runs' ? (
+        <RunsExplorer slug={manifest.slug} def={processDef} />
+      ) : tab === 'goals' ? (
+        <GoalsPanel slug={manifest.slug} def={processDef} />
       ) : loading && !data ? (
         <Spinner />
       ) : (

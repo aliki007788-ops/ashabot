@@ -12,6 +12,7 @@ import {
   inboxSource,
   layoutProcess,
   loadBotIndex,
+  buildTrail,
   loadRuns,
   pickScenario,
   runProcess,
@@ -350,6 +351,7 @@ export function ProcessConsole(props: {
       setSelected(null);
       setCurrent(text);
       const startedAt = Date.now();
+      const runLog: Array<{ t: number; text: string; tone: LogEntry['tone'] }> = [];
       const out = await runProcess(def, text, {
         slug,
         mode: modeRef.current,
@@ -359,7 +361,10 @@ export function ProcessConsole(props: {
         event,
         isCancelled: () => !mounted.current,
         onState: (id, s) => mounted.current && setStates((p) => ({ ...p, [id]: s })),
-        onLog: (e) => mounted.current && setLog((l) => [e, ...l].slice(0, 150)),
+        onLog: (e) => {
+          runLog.push({ t: e.t, text: e.text, tone: e.tone });
+          if (mounted.current) setLog((l) => [e, ...l].slice(0, 150));
+        },
       });
       const record: RunRecord = {
         id: `${startedAt}`,
@@ -370,6 +375,8 @@ export function ProcessConsole(props: {
         states: out.states,
         ms: out.ms,
         summary: def.outcome,
+        trail: buildTrail(def, out.states),
+        log: runLog.slice(-60),
       };
       if (mounted.current) {
         setHistory((h) => [record, ...h].slice(0, 60));

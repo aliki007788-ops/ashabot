@@ -1,5 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 import { getProvider } from '../../lib/ai/factory.js';
+import { ci } from '../../lib/dbmode.js';
 
 export async function clusterStatsRoutes(app: FastifyInstance) {
   const prisma = app.prisma;
@@ -333,16 +334,32 @@ ${runsList}
   });
 
   // ==================== PROCESS RUNS (میزکار فرایندمحور) ====================
+  // slug = «all» → پرونده‌های همه‌ی خوشه‌ها. فیلتر: q (متن)، status، origin، صفحه‌بندی: skip/take
   app.get('/:slug/process-runs', { preHandler: [app.authenticate] }, async (request) => {
     const { slug } = request.params as { slug: string };
-    const cluster = await prisma.cluster.findUnique({ where: { slug } });
-    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
-    const items = await prisma.clusterOutput.findMany({
-      where: { clusterId: cluster.id, type: 'PROCESS_RUN' },
-      orderBy: { createdAt: 'desc' },
-      take: 60,
-    });
-    return { items };
+    const q = (request.query ?? {}) as { q?: string; status?: string; origin?: string; skip?: string; take?: string };
+    const take = Math.min(100, Math.max(1, Number(q.take) || 30));
+    const skip = Math.max(0, Number(q.skip) || 0);
+    const where: Record<string, unknown> = { type: 'PROCESS_RUN' };
+    if (slug !== 'all') {
+      const cluster = await prisma.cluster.findUnique({ where: { slug } });
+      if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+      where.clusterId = cluster.id;
+    }
+    if (q.status === 'FAILED' || q.status === 'SUCCESS') where.status = q.status;
+    if (q.q) where.title = { contains: String(q.q).slice(0, 100), ...ci };
+    if (q.origin) where.metadata = { contains: `"origin":"${String(q.origin).replace(/[^a-z]/g, '')}"` };
+    const [items, total] = await Promise.all([
+      prisma.clusterOutput.findMany({
+        where: where as never,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+        include: { cluster: { select: { slug: true, name: true, icon: true, color: true } } },
+      }),
+      prisma.clusterOutput.count({ where: where as never }),
+    ]);
+    return { items, total };
   });
 
   app.post('/:slug/process-runs', { preHandler: [app.authenticate] }, async (request) => {
@@ -355,12 +372,30 @@ ${runsList}
       origin?: string;
       startedAt?: number;
       states?: unknown;
+      trail?: unknown;
+      log?: unknown;
     };
     const cluster = await prisma.cluster.findUnique({ where: { slug } });
     if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
-    let metadata = JSON.stringify({ origin: body.origin ?? 'manual', startedAt: body.startedAt ?? Date.now(), states: body.states ?? {} });
-    if (metadata.length > 30000) {
-      metadata = JSON.stringify({ origin: body.origin ?? 'manual', startedAt: body.startedAt ?? Date.now(), states: {} });
+    const origin = ['manual', 'auto', 'event'].includes(String(body.origin)) ? String(body.origin) : 'manual';
+    const base = { origin, startedAt: body.startedAt ?? Date.now() };
+    // اندازه‌ی مجاز: اول گزارش متنی، بعد خروجی‌های بلند، در آخر وضعیت مرحله‌ها حذف می‌شود
+    const trail = Array.isArray(body.trail) ? (body.trail as Array<Record<string, unknown>>) : [];
+    const cut = (n: number) =>
+      trail.map((t) => ({ ...t, output: typeof t.output === 'string' ? t.output.slice(0, n) : t.output }));
+    const tries: unknown[] = [
+      { ...base, states: body.states ?? {}, trail, log: body.log ?? [] },
+      { ...base, states: body.states ?? {}, trail: cut(400), log: [] },
+      { ...base, states: {}, trail: cut(120), log: [] },
+      { ...base, states: {}, trail: [], log: [] },
+    ];
+    let metadata = JSON.stringify(tries[3]);
+    for (const t of tries) {
+      const m = JSON.stringify(t);
+      if (m.length <= 90000) {
+        metadata = m;
+        break;
+      }
     }
     const row = await prisma.clusterOutput.create({
       data: {
@@ -375,5 +410,57 @@ ${runsList}
       },
     });
     return { id: row.id };
+  });
+
+  // ==================== GOALS (اهداف کاربر برای هر خوشه) ====================
+  const METRICS = ['runs_done', 'success_rate', 'auto_share', 'real_actions', 'real_crm', 'real_booking', 'real_payment', 'avg_seconds', 'keyword'];
+  const PERIODS = ['day', 'week', 'month'];
+
+  app.get('/:slug/goals', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const items = await prisma.clusterOutput.findMany({
+      where: { clusterId: cluster.id, type: 'GOAL' },
+      orderBy: { createdAt: 'asc' },
+      take: 50,
+    });
+    return { items };
+  });
+
+  app.post('/:slug/goals', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const b = (request.body ?? {}) as { title?: string; metric?: string; target?: number; period?: string; keyword?: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const title = String(b.title ?? '').trim().slice(0, 160);
+    const target = Number(b.target);
+    if (!title) throw Object.assign(new Error('عنوان هدف لازم است'), { statusCode: 400 });
+    if (!METRICS.includes(String(b.metric))) throw Object.assign(new Error('شاخص نامعتبر'), { statusCode: 400 });
+    if (!Number.isFinite(target) || target <= 0) throw Object.assign(new Error('عدد هدف باید بزرگ‌تر از صفر باشد'), { statusCode: 400 });
+    const period = PERIODS.includes(String(b.period)) ? String(b.period) : 'week';
+    const count = await prisma.clusterOutput.count({ where: { clusterId: cluster.id, type: 'GOAL' } });
+    if (count >= 20) throw Object.assign(new Error('حداکثر ۲۰ هدف برای هر خوشه'), { statusCode: 400 });
+    const row = await prisma.clusterOutput.create({
+      data: {
+        clusterId: cluster.id,
+        type: 'GOAL',
+        title,
+        description: period,
+        value: target,
+        unit: String(b.metric),
+        status: 'ACTIVE',
+        metadata: JSON.stringify({ keyword: String(b.keyword ?? '').trim().slice(0, 60) }),
+      },
+    });
+    return row;
+  });
+
+  app.delete('/:slug/goals/:id', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug, id } = request.params as { slug: string; id: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    await prisma.clusterOutput.deleteMany({ where: { id, clusterId: cluster.id, type: 'GOAL' } });
+    return { ok: true };
   });
 }

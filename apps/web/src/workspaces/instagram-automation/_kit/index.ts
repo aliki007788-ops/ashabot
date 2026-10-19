@@ -7,3 +7,5 @@ export * from './process';
 export * from './process-ui';
 export * from './workspace';
 export * from './executors';
+export * from './goals';
+export * from './runs-ui';

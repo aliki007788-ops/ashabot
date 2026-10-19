@@ -17,6 +17,8 @@ import {
   Spinner,
   StatCard,
   ProcessConsole,
+  RunsExplorer,
+  GoalsPanel,
   WorkspaceShell,
   inboxSource,
   mergeSources,
@@ -253,6 +255,8 @@ export default function KnowledgeWorkspace(props: { embedded?: boolean }) {
       accent={manifest.accent}
       tabs={[
         { id: 'process', label: '🧭 فرایند زنده' },
+    { id: 'runs', label: '📂 پرونده‌ها' },
+    { id: 'goals', label: '🎯 اهداف' },
         { id: 'sources', label: 'منابع دانش', badge: totalDocs },
         { id: 'lab', label: 'آزمایشگاه پرسش' },
         { id: 'queue', label: 'صف اپراتور', badge: waiting },
@@ -265,6 +269,10 @@ export default function KnowledgeWorkspace(props: { embedded?: boolean }) {
       <ErrorBanner message={kbs.error} onRetry={() => void kbs.reload()} />
       {tab === 'process' ? (
         <ProcessConsole slug={manifest.slug} def={processDef} makeSource={makeSource} />
+      ) : tab === 'runs' ? (
+        <RunsExplorer slug={manifest.slug} def={processDef} />
+      ) : tab === 'goals' ? (
+        <GoalsPanel slug={manifest.slug} def={processDef} />
       ) : kbs.loading && !kbs.data ? (
         <Spinner />
       ) : (

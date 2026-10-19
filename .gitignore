@@ -64,7 +64,3 @@ fix-channels-routes.js
 # local sqlite
 apps/api/prisma/local.db*
 apps/api/prisma/schema.local.prisma
-
-bot-platform.zip
-packages.zip
-scripts.zip
