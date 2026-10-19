@@ -1,5 +1,6 @@
 'use client';
 
+import { DownloadPack } from '@/components/DownloadPack';
 import { useEffect, useState, useRef } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
@@ -371,6 +372,7 @@ export default function ClusterDetailPage() {
                   ))}
                 </div>
               )}
+              {workspaces[cluster.slug] && <DownloadPack slug={cluster.slug} />}
             </div>
             <p className="text-white/50 mt-2 max-w-2xl">{cluster.description}</p>
           </div>

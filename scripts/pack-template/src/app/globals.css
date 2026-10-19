@@ -1,0 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;500;700;800;900&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  font-family: 'Vazirmatn', system-ui, sans-serif;
+  background: #07122e;
+  color: #fff;
+}
+body {
+  min-height: 100vh;
+  background: radial-gradient(1200px 600px at 80% -10%, rgba(106, 141, 255, 0.18), transparent), #07122e;
+}

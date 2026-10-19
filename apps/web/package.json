@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3000",
-    "build": "next build",
+    "dev": "node ../../scripts/pack-all.cjs && next dev -p 3000",
+    "build": "node ../../scripts/pack-all.cjs && next build",
     "start": "next start -p 3000",
     "lint": "next lint"
   },

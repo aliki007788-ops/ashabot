@@ -64,3 +64,6 @@ fix-channels-routes.js
 # local sqlite
 apps/api/prisma/local.db*
 apps/api/prisma/schema.local.prisma
+
+# === بسته‌های دانلودی خوشه‌ها (در بیلد ساخته می‌شوند) ===
+apps/web/public/packs/

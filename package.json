@@ -19,7 +19,8 @@
     "ws:gen": "node scripts/gen-workspaces.cjs",
     "kit:sync": "node scripts/kit-sync.cjs",
     "kit:check": "node scripts/kit-check.cjs",
-    "pack:workspace": "node scripts/pack-workspace.cjs"
+    "pack:workspace": "node scripts/pack-workspace.cjs",
+    "pack:all": "node scripts/pack-all.cjs"
   },
   "devDependencies": {
     "turbo": "^2.0.0",
