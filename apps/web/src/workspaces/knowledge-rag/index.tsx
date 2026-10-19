@@ -18,7 +18,7 @@ import {
   StatCard,
   ProcessConsole,
   RunsExplorer,
-  GoalsPanel,
+  PlannerPanel,
   WorkspaceShell,
   inboxSource,
   mergeSources,
@@ -256,7 +256,7 @@ export default function KnowledgeWorkspace(props: { embedded?: boolean }) {
       tabs={[
         { id: 'process', label: '🧭 فرایند زنده' },
     { id: 'runs', label: '📂 پرونده‌ها' },
-    { id: 'goals', label: '🎯 اهداف' },
+    { id: 'goals', label: '🎯 هدف و برنامه' },
         { id: 'sources', label: 'منابع دانش', badge: totalDocs },
         { id: 'lab', label: 'آزمایشگاه پرسش' },
         { id: 'queue', label: 'صف اپراتور', badge: waiting },
@@ -272,7 +272,7 @@ export default function KnowledgeWorkspace(props: { embedded?: boolean }) {
       ) : tab === 'runs' ? (
         <RunsExplorer slug={manifest.slug} def={processDef} />
       ) : tab === 'goals' ? (
-        <GoalsPanel slug={manifest.slug} def={processDef} />
+        <PlannerPanel slug={manifest.slug} def={processDef} />
       ) : kbs.loading && !kbs.data ? (
         <Spinner />
       ) : (

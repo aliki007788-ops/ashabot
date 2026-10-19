@@ -20,7 +20,7 @@ import {
   StatCard,
   ProcessConsole,
   RunsExplorer,
-  GoalsPanel,
+  PlannerPanel,
   WorkspaceShell,
   inboxSource,
   ownIds,
@@ -227,7 +227,7 @@ export default function BookingWorkspace(props: { embedded?: boolean }) {
   const tabs = [
     { id: 'process', label: '🧭 فرایند زنده' },
     { id: 'runs', label: '📂 پرونده‌ها' },
-    { id: 'goals', label: '🎯 اهداف' },
+    { id: 'goals', label: '🎯 هدف و برنامه' },
     { id: 'today', label: 'امروز', badge: todays.length },
     { id: 'week', label: 'تقویم هفتگی' },
     { id: 'all', label: 'همه نوبت‌ها', badge: items.length },
@@ -260,7 +260,7 @@ export default function BookingWorkspace(props: { embedded?: boolean }) {
       ) : tab === 'runs' ? (
         <RunsExplorer slug={manifest.slug} def={processDef} />
       ) : tab === 'goals' ? (
-        <GoalsPanel slug={manifest.slug} def={processDef} />
+        <PlannerPanel slug={manifest.slug} def={processDef} />
       ) : loading && !data ? (
         <Spinner />
       ) : (

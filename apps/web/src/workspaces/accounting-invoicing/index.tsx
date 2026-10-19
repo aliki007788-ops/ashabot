@@ -20,7 +20,7 @@ import {
   StatCard,
   ProcessConsole,
   RunsExplorer,
-  GoalsPanel,
+  PlannerPanel,
   WorkspaceShell,
   inboxSource,
   ownIds,
@@ -179,7 +179,7 @@ export default function InvoicingWorkspace(props: { embedded?: boolean }) {
       tabs={[
         { id: 'process', label: '🧭 فرایند زنده' },
     { id: 'runs', label: '📂 پرونده‌ها' },
-    { id: 'goals', label: '🎯 اهداف' },
+    { id: 'goals', label: '🎯 هدف و برنامه' },
         { id: 'overview', label: 'نمای کلی' },
         { id: 'new', label: 'فاکتور جدید' },
         { id: 'list', label: 'تراکنش‌ها', badge: items.length },
@@ -205,7 +205,7 @@ export default function InvoicingWorkspace(props: { embedded?: boolean }) {
       ) : tab === 'runs' ? (
         <RunsExplorer slug={manifest.slug} def={processDef} />
       ) : tab === 'goals' ? (
-        <GoalsPanel slug={manifest.slug} def={processDef} />
+        <PlannerPanel slug={manifest.slug} def={processDef} />
       ) : loading && !data ? (
         <Spinner />
       ) : (

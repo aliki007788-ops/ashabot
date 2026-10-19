@@ -463,4 +463,61 @@ ${runsList}
     await prisma.clusterOutput.deleteMany({ where: { id, clusterId: cluster.id, type: 'GOAL' } });
     return { ok: true };
   });
+
+  // ==================== PLANS (برنامه‌ی هوشمند رسیدن به هدف) ====================
+  const parsePlanBody = (raw: unknown): string => {
+    const json = JSON.stringify(raw ?? {});
+    if (json.length > 60000) throw Object.assign(new Error('برنامه خیلی بزرگ است'), { statusCode: 400 });
+    return json;
+  };
+
+  app.get('/:slug/plans', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const items = await prisma.clusterOutput.findMany({
+      where: { clusterId: cluster.id, type: 'PLAN' },
+      orderBy: { createdAt: 'desc' },
+      take: 20,
+    });
+    return { items };
+  });
+
+  app.post('/:slug/plans', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const b = (request.body ?? {}) as { title?: string; plan?: unknown };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const title = String(b.title ?? '').trim().slice(0, 200);
+    if (!title) throw Object.assign(new Error('عنوان هدف لازم است'), { statusCode: 400 });
+    const count = await prisma.clusterOutput.count({ where: { clusterId: cluster.id, type: 'PLAN' } });
+    if (count >= 20) throw Object.assign(new Error('حداکثر ۲۰ برنامه برای هر خوشه؛ یکی را حذف کنید'), { statusCode: 400 });
+    return prisma.clusterOutput.create({
+      data: { clusterId: cluster.id, type: 'PLAN', title, status: 'ACTIVE', metadata: parsePlanBody(b.plan) },
+    });
+  });
+
+  app.patch('/:slug/plans/:id', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug, id } = request.params as { slug: string; id: string };
+    const b = (request.body ?? {}) as { plan?: unknown; status?: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    const row = await prisma.clusterOutput.findFirst({ where: { id, clusterId: cluster.id, type: 'PLAN' } });
+    if (!row) throw Object.assign(new Error('Plan not found'), { statusCode: 404 });
+    return prisma.clusterOutput.update({
+      where: { id },
+      data: {
+        ...(b.plan !== undefined ? { metadata: parsePlanBody(b.plan) } : {}),
+        ...(b.status === 'ACTIVE' || b.status === 'DONE' ? { status: b.status } : {}),
+      },
+    });
+  });
+
+  app.delete('/:slug/plans/:id', { preHandler: [app.authenticate] }, async (request) => {
+    const { slug, id } = request.params as { slug: string; id: string };
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster) throw Object.assign(new Error('Cluster not found'), { statusCode: 404 });
+    await prisma.clusterOutput.deleteMany({ where: { id, clusterId: cluster.id, type: 'PLAN' } });
+    return { ok: true };
+  });
 }
