@@ -31,6 +31,7 @@ import { workflowsRoutes } from './modules/workflows/workflows.routes.js';
 import { marketplaceRoutes } from './modules/marketplace/marketplace.routes.js';
 import { evalsRoutes } from './modules/evals/evals.routes.js';
 import { storeRoutes } from './modules/store/store.routes.js';
+import { publicRoutes } from './modules/public/public.routes.js';
 import { adminRoutes } from './modules/admin/admin.routes.js';
 import { TOOL_NAMES } from './modules/tools/tools.registry.js';
 import { WebChatAdapter } from './modules/channels/adapters/webchat.adapter.js';
@@ -150,6 +151,7 @@ export async function buildApp() {
   await app.register(workflowsRoutes, { prefix: '/api/workflows' });
   await app.register(marketplaceRoutes, { prefix: '/api/marketplace' });
   await app.register(evalsRoutes, { prefix: '/api/evals' });
+  await app.register(publicRoutes, { prefix: '/api/public' });
   await app.register(storeRoutes, { prefix: '/api/store' });
   await app.register(adminRoutes, { prefix: '/api/admin' });
   app.get('/api/tools', async () => ({ items: TOOL_NAMES }));

@@ -1,7 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { AuthService } from './auth.service.js';
 import { registerSchema, loginSchema, changePasswordSchema, updateMeSchema, forgotSchema, resetSchema } from './auth.schema.js';
-import { ensureAdminRole } from '../../lib/access.js';
+import { ensureAdminRole, getSettings, isAdminEmail } from '../../lib/access.js';
 import { hashPassword, verifyPassword } from '../../lib/password.js';
 import { generateOpaqueToken, hashToken } from '../../lib/jwt.js';
 import { sendMail } from '../../lib/mailer.js';
@@ -17,6 +17,9 @@ export async function authRoutes(app: FastifyInstance) {
 
   app.post('/register', strict, async (request) => {
     const input = registerSchema.parse(request.body);
+    if (!(await getSettings(app.prisma)).registrationOpen && !isAdminEmail(input.email)) {
+      throw Object.assign(new Error('ثبت‌نام فعلاً بسته است'), { statusCode: 403 });
+    }
     const result = await service.register(input as any);
     const user = await ensureAdminRole(app.prisma, result.user);
     // اگر نقش ارتقا یافت، توکن جدید با نقش درست بسازیم

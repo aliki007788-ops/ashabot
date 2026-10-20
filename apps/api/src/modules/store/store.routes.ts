@@ -150,6 +150,28 @@ export async function storeRoutes(app: FastifyInstance) {
     return back('fail');
   });
 
+  /* ───── دوره‌ی رایگان (قابل‌کنترل کامل از پنل مدیریت) ───── */
+  app.post('/trial', { ...auth, config: { rateLimit: { max: 10, timeWindow: '1 minute' } } }, async (request) => {
+    const { slug } = z.object({ slug: z.string().min(1).max(120) }).parse(request.body);
+    const settings = await getSettings(prisma, true);
+    const cluster = await prisma.cluster.findUnique({ where: { slug } });
+    if (!cluster || !cluster.isActive) throw Object.assign(new Error('خوشه پیدا نشد'), { statusCode: 404 });
+    const landing = await prisma.landing.findUnique({ where: { slug } });
+    if (!settings.trialEnabled || landing?.trialEnabled === false) throw Object.assign(new Error('دوره‌ی رایگان برای این خوشه فعال نیست'), { statusCode: 403 });
+    const userId = request.user.sub;
+    const now = new Date();
+    const prior = await prisma.entitlement.findFirst({ where: { userId, kind: 'CLUSTER', refSlug: slug, source: 'TRIAL' } });
+    if (prior) throw Object.assign(new Error('دوره‌ی رایگان این خوشه را قبلاً استفاده کرده‌اید'), { statusCode: 400 });
+    const active = await prisma.entitlement.findFirst({ where: { userId, kind: 'CLUSTER', refSlug: slug, expiresAt: { gt: now } } });
+    if (active) return { ok: true, already: true, expiresAt: active.expiresAt };
+    const days = landing?.trialDays ?? settings.trialDays;
+    const ent = await prisma.entitlement.create({
+      data: { userId, kind: 'CLUSTER', refSlug: slug, source: 'TRIAL', expiresAt: new Date(now.getTime() + days * 86_400_000) },
+    });
+    await prisma.activityLog.create({ data: { type: 'trial.start', message: `شروع دوره‌ی رایگان ${days} روزه‌ی خوشه ${cluster.name}`, userId } });
+    return { ok: true, days, expiresAt: ent.expiresAt };
+  });
+
   /* ───── خریدهای من ───── */
   app.get('/me', auth, async (request) => {
     const now = new Date();

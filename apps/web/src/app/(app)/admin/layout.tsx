@@ -9,6 +9,7 @@ const TABS = [
   { href: '/admin/users', label: '👥 کاربران' },
   { href: '/admin/orders', label: '🧾 سفارش‌ها' },
   { href: '/admin/catalog', label: '🏷 قیمت‌ها و کاتالوگ' },
+  { href: '/admin/landings', label: '🌐 لندینگ‌ها' },
   { href: '/admin/settings', label: '⚙ تنظیمات فروش' },
   { href: '/admin/system', label: '🩺 سلامت سیستم' },
 ];

@@ -38,7 +38,7 @@ export default function AccountPage() {
             {active.map((e) => (
               <div key={e.id} className="rounded-2xl border border-white/10 bg-white/[0.04] p-5 space-y-3" style={{ borderTop: `3px solid ${e.color}` }}>
                 <div className="flex items-center justify-between gap-3">
-                  <div className="flex items-center gap-3"><span className="text-3xl">{e.icon}</span><div><div className="font-black">{e.name}</div><div className="text-xs text-white/40">{e.kind === 'CLUSTER' ? 'خوشه‌ی کامل' : 'ربات'}{e.source === 'ADMIN' && ' · هدیه'}</div></div></div>
+                  <div className="flex items-center gap-3"><span className="text-3xl">{e.icon}</span><div><div className="font-black">{e.name}</div><div className="text-xs text-white/40">{e.kind === 'CLUSTER' ? 'خوشه‌ی کامل' : 'ربات'}{e.source === 'ADMIN' && ' · هدیه'}{e.source === 'TRIAL' && ' · دوره‌ی رایگان'}</div></div></div>
                   <div className={'text-xs font-bold px-3 py-1 rounded-full ' + (e.daysLeft <= 7 ? 'bg-amber-500/20 text-amber-300' : 'bg-green-500/15 text-green-300')}>{e.daysLeft} روز مانده</div>
                 </div>
                 <div className="text-[11px] text-white/40">اعتبار تا {dateFa(e.expiresAt)}</div>

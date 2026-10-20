@@ -6,27 +6,12 @@ import { usePathname, useRouter } from 'next/navigation';
 import { useAuth } from '@/lib/auth-context';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { NAV, ALWAYS_ON } from '@/lib/nav';
+import { usePublicConfig } from '@/lib/public-config';
+import { api, extractError } from '@/lib/api';
+import { toast } from 'sonner';
 
-const NAV = [
-  { href: '/dashboard', label: 'داشبورد' },
-  { href: '/store', label: '🛒 فروشگاه' },
-  { href: '/account', label: '👤 حساب من' },
-  { href: '/clusters', label: 'خوشه‌ها' },
-  { href: '/w', label: 'میزکارها' },
-  { href: '/runs', label: 'پرونده‌ها' },
-  { href: '/bots', label: 'ربات‌ها' },
-  { href: '/marketplace', label: 'فروشگاه قالب' },
-  { href: '/knowledge', label: 'دانش' },
-  { href: '/inbox', label: 'صندوق گفتگو' },
-  { href: '/crm', label: 'CRM' },
-  { href: '/bookings', label: 'نوبت‌ها' },
-  { href: '/payments', label: 'پرداخت‌ها' },
-  { href: '/workflows', label: 'اتوماسیون' },
-  { href: '/evals', label: 'تست کیفیت' },
-  { href: '/channels', label: 'کانال‌ها' },
-  { href: '/brains', label: 'مغزها' },
-  { href: '/settings', label: 'تنظیمات' },
-];
+
 const ADMIN_NAV = { href: '/admin', label: '🛡 مدیریت' };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,9 +19,31 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
 
+  const cfg = usePublicConfig();
+  const disabled = (cfg?.disabledModules ?? []).filter((h) => !ALWAYS_ON.includes(h));
+  const isOff = (href: string) => !isAdmin && disabled.some((h) => href === h || href.startsWith(h + '/'));
+
   useEffect(() => {
     if (!loading && !user) router.push('/login');
   }, [loading, user, router]);
+
+  // ادامه‌ی مسیر «شروع از لندینگ»: بعد از ثبت‌نام/ورود، دوره‌ی رایگان را شروع کن و به میزکار برو
+  useEffect(() => {
+    if (!user) return;
+    let raw: string | null = null;
+    try { raw = sessionStorage.getItem('asha_go'); sessionStorage.removeItem('asha_go'); } catch { /* ignore */ }
+    if (!raw) return;
+    let go: { slug?: string; trial?: boolean } = {};
+    try { go = JSON.parse(raw); } catch { return; }
+    if (!go.slug) return;
+    const slug = go.slug;
+    void (async () => {
+      if (go.trial) {
+        try { await api.post('/api/store/trial', { slug }); toast.success('دوره‌ی رایگان شما شروع شد'); } catch (e) { toast.error(extractError(e)); }
+      }
+      router.replace(`/w/${slug}`);
+    })();
+  }, [user, router]);
 
   if (loading) {
     return (
@@ -78,7 +85,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav className="max-w-7xl mx-auto px-6 pb-2 flex gap-1 overflow-x-auto text-sm">
-          {(isAdmin ? [ADMIN_NAV, ...NAV] : NAV).map((n) => {
+          {(isAdmin ? [ADMIN_NAV, ...NAV] : NAV).filter((n) => !isOff(n.href)).map((n) => {
             const active = pathname === n.href || pathname.startsWith(n.href + '/');
             return (
               <Link
@@ -97,7 +104,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           })}
         </nav>
       </header>
-      <main className="max-w-7xl mx-auto p-6">{children}</main>
+      <main className="max-w-7xl mx-auto p-6">
+        {isOff(pathname) ? (
+          <div className="max-w-xl mx-auto mt-16 rounded-3xl border border-white/10 bg-white/[0.04] p-10 text-center">
+            <div className="text-5xl mb-4">🚧</div>
+            <h1 className="text-2xl font-black mb-2">این بخش فعلاً غیرفعال است</h1>
+            <p className="text-white/50 text-sm">مدیر پلتفرم این بخش را موقتاً خاموش کرده است.</p>
+          </div>
+        ) : (
+          children
+        )}
+      </main>
     </div>
   );
 }

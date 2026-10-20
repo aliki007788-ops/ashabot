@@ -117,7 +117,7 @@ function UserDrawer({ id, onClose }: { id: string; onClose: () => void }) {
                     const active = new Date(e.expiresAt) > new Date();
                     return (
                       <li key={e.id} className="flex items-center justify-between gap-2 rounded-xl bg-white/5 px-3 py-2">
-                        <span>{e.kind === 'CLUSTER' ? 'خوشه' : 'ربات'} <b dir="ltr">{e.refSlug}</b> <span className="text-[10px] text-white/40">({e.source === 'ADMIN' ? 'هدیه/دستی' : 'خرید'})</span></span>
+                        <span>{e.kind === 'CLUSTER' ? 'خوشه' : 'ربات'} <b dir="ltr">{e.refSlug}</b> <span className="text-[10px] text-white/40">({e.source === 'ADMIN' ? 'هدیه/دستی' : e.source === 'TRIAL' ? 'دوره‌ی رایگان' : 'خرید'})</span></span>
                         <span className="flex items-center gap-2"><span className={active ? 'text-green-300 text-xs' : 'text-white/40 text-xs'}>{active ? 'تا ' : 'منقضی '}{dateFa(e.expiresAt)}</span>
                           <button className="text-red-400 text-xs" onClick={() => { if (confirm('این دسترسی حذف شود؟')) void run(() => api.delete(`/api/admin/entitlements/${e.id}`), 'حذف شد'); }}>حذف</button></span>
                       </li>

@@ -687,3 +687,19 @@ model PasswordReset {
   @@index([userId])
   @@map("password_resets")
 }
+
+/// لندینگ هر خوشه؛ متن پیش‌فرض در کد است و این ردیف فقط تغییرات مدیر را نگه می‌دارد
+model Landing {
+  slug         String   @id
+  isActive     Boolean  @default(true)
+  /// null = پیروی از تنظیم کلی
+  trialEnabled Boolean?
+  trialDays    Int?
+  demoEnabled  Boolean?
+  /// JSON: بازنویسی بخش‌هایی از متن پیش‌فرض
+  content      String   @default("{}")
+  views        Int      @default(0)
+  updatedAt    DateTime @updatedAt
+
+  @@map("landings")
+}

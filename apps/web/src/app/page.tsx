@@ -26,6 +26,9 @@ export default function LandingPage() {
             <Link href="/#features" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               امکانات
             </Link>
+            <Link href="/c" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
+              خوشه‌ها
+            </Link>
             <Link href="/pricing" className="text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors">
               قیمت‌گذاری
             </Link>

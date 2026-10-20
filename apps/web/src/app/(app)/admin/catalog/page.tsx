@@ -8,8 +8,8 @@ import { num, toman } from '@/lib/fmt';
 import { ErrorBox, Spinner, inputCls } from '@/components/ui/bits';
 import { Button } from '@/components/ui/button';
 
-interface Cl { slug: string; name: string; icon: string; color: string; isActive: boolean; priceMonthly: number; botCount: number; sold: number }
-interface Bt { slug: string; name: string; icon: string; isActive: boolean; isPremium: boolean; priceMonthly: number; sold: number; cluster: { name: string; slug: string } | null }
+interface Cl { slug: string; name: string; icon: string; color: string; description: string | null; sortOrder: number; isActive: boolean; priceMonthly: number; botCount: number; sold: number }
+interface Bt { slug: string; name: string; icon: string; description: string | null; isActive: boolean; isPremium: boolean; priceMonthly: number; sold: number; cluster: { name: string; slug: string } | null }
 
 function PriceCell({ kind, slug, value, onSaved }: { kind: 'cluster' | 'bot'; slug: string; value: number; onSaved: (v: number) => void }) {
   const [v, setV] = useState(String(value));
@@ -30,17 +30,67 @@ function PriceCell({ kind, slug, value, onSaved }: { kind: 'cluster' | 'bot'; sl
   );
 }
 
+type Edit = { kind: 'cluster' | 'bot'; slug: string; name: string; description: string; icon: string; color?: string; sortOrder?: number; isPremium?: boolean };
+
+function EditModal({ e, onClose, onSaved }: { e: Edit; onClose: () => void; onSaved: () => void }) {
+  const [v, setV] = useState<Edit>(e);
+  const [busy, setBusy] = useState(false);
+  const save = async () => {
+    setBusy(true);
+    try {
+      const body = v.kind === 'cluster'
+        ? { name: v.name, description: v.description, icon: v.icon, color: v.color, sortOrder: Number(v.sortOrder) || 0 }
+        : { name: v.name, description: v.description, icon: v.icon, isPremium: !!v.isPremium };
+      await api.patch(`/api/admin/catalog/${v.kind}/${v.slug}`, body);
+      toast.success('ذخیره شد');
+      onSaved();
+    } catch (err) { toast.error(extractError(err)); } finally { setBusy(false); }
+  };
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 grid place-items-center p-4" onClick={onClose}>
+      <div className="w-full max-w-lg rounded-3xl bg-[#0e1224] border border-white/10 p-6 space-y-4" onClick={(x) => x.stopPropagation()}>
+        <h3 className="text-lg font-black">ویرایش {v.kind === 'cluster' ? 'خوشه' : 'ربات'}</h3>
+        <div className="grid grid-cols-[80px_1fr] gap-3"><input className={inputCls + ' text-center text-xl'} value={v.icon} maxLength={8} onChange={(x) => setV({ ...v, icon: x.target.value })} /><input className={inputCls} value={v.name} onChange={(x) => setV({ ...v, name: x.target.value })} placeholder="نام" /></div>
+        <textarea className={inputCls + ' w-full h-24'} value={v.description} onChange={(x) => setV({ ...v, description: x.target.value })} placeholder="توضیح" />
+        {v.kind === 'cluster' ? (
+          <div className="flex gap-3 items-center text-sm"><label>رنگ</label><input type="color" value={v.color} onChange={(x) => setV({ ...v, color: x.target.value })} /><label className="mr-4">ترتیب نمایش</label><input type="number" className={inputCls + ' w-24'} value={v.sortOrder} onChange={(x) => setV({ ...v, sortOrder: Number(x.target.value) })} dir="ltr" /></div>
+        ) : (
+          <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={!!v.isPremium} onChange={(x) => setV({ ...v, isPremium: x.target.checked })} />ربات پرمیوم</label>
+        )}
+        <div className="flex gap-3"><Button loading={busy} onClick={save}>ذخیره</Button><Button variant="ghost" onClick={onClose}>انصراف</Button></div>
+      </div>
+    </div>
+  );
+}
+
+function ActiveToggle({ kind, slug, value, onChanged }: { kind: 'cluster' | 'bot'; slug: string; value: boolean; onChanged: (v: boolean) => void }) {
+  const [busy, setBusy] = useState(false);
+  return (
+    <label className="flex items-center gap-1.5 text-xs text-white/60 cursor-pointer">
+      <input type="checkbox" disabled={busy} checked={value} className="w-4 h-4" onChange={async (e) => {
+        setBusy(true);
+        try { await api.patch(`/api/admin/catalog/${kind}/${slug}`, { isActive: e.target.checked }); onChanged(e.target.checked); } catch (err) { toast.error(extractError(err)); } finally { setBusy(false); }
+      }} />
+      فعال
+    </label>
+  );
+}
+
 export default function AdminCatalog() {
   const [q, setQ] = useState('');
   const [dq, setDq] = useState('');
   useEffect(() => { const t = setTimeout(() => setDq(q), 350); return () => clearTimeout(t); }, [q]);
   const { data, error, loading, reload, setData } = useFetch<{ clusters: Cl[]; bots: Bt[] }>('/api/admin/catalog', { q: dq });
+  const [edit, setEdit] = useState<Edit | null>(null);
   const [bulkKind, setBulkKind] = useState<'CLUSTER' | 'BOT'>('CLUSTER');
   const [bulkPrice, setBulkPrice] = useState('');
   const [onlyUnpriced, setOnlyUnpriced] = useState(true);
 
   const setC = (slug: string, p: number) => setData((d) => (d ? { ...d, clusters: d.clusters.map((c) => (c.slug === slug ? { ...c, priceMonthly: p } : c)) } : d));
   const setB = (slug: string, p: number) => setData((d) => (d ? { ...d, bots: d.bots.map((b) => (b.slug === slug ? { ...b, priceMonthly: p } : b)) } : d));
+
+  const setCA = (slug: string, a: boolean) => setData((d) => (d ? { ...d, clusters: d.clusters.map((c) => (c.slug === slug ? { ...c, isActive: a } : c)) } : d));
+  const setBA = (slug: string, a: boolean) => setData((d) => (d ? { ...d, bots: d.bots.map((b) => (b.slug === slug ? { ...b, isActive: a } : b)) } : d));
 
   const bulk = async () => {
     const n = Math.round(Number(bulkPrice));
@@ -75,7 +125,11 @@ export default function AdminCatalog() {
               {data.clusters.map((c) => (
                 <div key={c.slug} className="flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
                   <div className="flex items-center gap-3"><span className="text-xl">{c.icon}</span><div><div className="font-bold">{c.name}{!c.isActive && <span className="text-red-400 text-[10px] mr-2">غیرفعال</span>}</div><div className="text-[11px] text-white/40">{num(c.botCount)} ربات · {num(c.sold)} فروش</div></div></div>
-                  <PriceCell kind="cluster" slug={c.slug} value={c.priceMonthly} onSaved={(p) => setC(c.slug, p)} />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ActiveToggle kind="cluster" slug={c.slug} value={c.isActive} onChanged={(a) => setCA(c.slug, a)} />
+                    <button className="text-xs text-[#6a8dff]" onClick={() => setEdit({ kind: 'cluster', slug: c.slug, name: c.name, description: c.description ?? '', icon: c.icon, color: c.color, sortOrder: c.sortOrder })}>ویرایش</button>
+                    <PriceCell kind="cluster" slug={c.slug} value={c.priceMonthly} onSaved={(p) => setC(c.slug, p)} />
+                  </div>
                 </div>
               ))}
             </div>
@@ -87,13 +141,18 @@ export default function AdminCatalog() {
               {data.bots.map((b) => (
                 <div key={b.slug} className="flex flex-wrap items-center justify-between gap-3 p-3 text-sm">
                   <div className="flex items-center gap-3"><span className="text-xl">{b.icon}</span><div><div className="font-bold">{b.name}{b.isPremium && <span className="text-amber-300 text-[10px] mr-2">پرمیوم</span>}</div><div className="text-[11px] text-white/40">{b.cluster?.name ?? 'بدون خوشه'} · {num(b.sold)} فروش</div></div></div>
-                  <PriceCell kind="bot" slug={b.slug} value={b.priceMonthly} onSaved={(p) => setB(b.slug, p)} />
+                  <div className="flex flex-wrap items-center gap-3">
+                    <ActiveToggle kind="bot" slug={b.slug} value={b.isActive} onChanged={(a) => setBA(b.slug, a)} />
+                    <button className="text-xs text-[#6a8dff]" onClick={() => setEdit({ kind: 'bot', slug: b.slug, name: b.name, description: b.description ?? '', icon: b.icon, isPremium: b.isPremium })}>ویرایش</button>
+                    <PriceCell kind="bot" slug={b.slug} value={b.priceMonthly} onSaved={(p) => setB(b.slug, p)} />
+                  </div>
                 </div>
               ))}
             </div>
           </section>
         </>
       )}
+      {edit && <EditModal e={edit} onClose={() => setEdit(null)} onSaved={() => { setEdit(null); void reload(); }} />}
     </div>
   );
 }

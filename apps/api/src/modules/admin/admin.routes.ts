@@ -3,6 +3,8 @@ import { z } from 'zod';
 import { env } from '../../env.js';
 import { ci } from '../../lib/dbmode.js';
 import { adminEmails, getSettings, saveSettings } from '../../lib/access.js';
+import { defaultLanding, LANDING_SLUGS } from '../../lib/landing-defaults.js';
+import { loadLanding, mergeContent } from '../../lib/landing.js';
 import { addMonths, fulfillOrder, MONTH_CHOICES } from '../../lib/store.js';
 import { generateOpaqueToken, hashToken } from '../../lib/jwt.js';
 
@@ -171,11 +173,11 @@ export async function adminRoutes(app: FastifyInstance) {
   app.get('/catalog', admin, async (request) => {
     const q = (request.query ?? {}) as { q?: string };
     const [clusters, bots, sold] = await Promise.all([
-      prisma.cluster.findMany({ orderBy: { sortOrder: 'asc' }, select: { slug: true, name: true, icon: true, color: true, isActive: true, priceMonthly: true, _count: { select: { bots: true } } } }),
+      prisma.cluster.findMany({ orderBy: { sortOrder: 'asc' }, select: { slug: true, name: true, icon: true, color: true, description: true, sortOrder: true, isActive: true, priceMonthly: true, _count: { select: { bots: true } } } }),
       prisma.bot.findMany({
         where: { userId: null, ...(q.q?.trim() ? { OR: [{ name: { contains: q.q.trim(), ...ci } }, { slug: { contains: q.q.trim(), ...ci } }] } : {}) },
         orderBy: [{ clusterId: 'asc' }, { name: 'asc' }], take: 300,
-        select: { slug: true, name: true, icon: true, isActive: true, isPremium: true, priceMonthly: true, cluster: { select: { name: true, slug: true } } },
+        select: { slug: true, name: true, icon: true, description: true, isActive: true, isPremium: true, priceMonthly: true, cluster: { select: { name: true, slug: true } } },
       }),
       prisma.orderItem.groupBy({ by: ['kind', 'refSlug'], where: { order: { status: 'PAID' } }, _count: { _all: true } }),
     ]);
@@ -186,16 +188,24 @@ export async function adminRoutes(app: FastifyInstance) {
     };
   });
 
-  const priceSchema = z.object({ priceMonthly: z.number().int().min(0).max(500_000_000) });
+  const clusterPatch = z.object({
+    priceMonthly: z.number().int().min(0).max(500_000_000).optional(), isActive: z.boolean().optional(),
+    name: z.string().min(2).max(80).optional(), description: z.string().max(400).optional(),
+    icon: z.string().min(1).max(8).optional(), color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(), sortOrder: z.number().int().min(0).max(1000).optional(),
+  });
+  const botPatch = z.object({
+    priceMonthly: z.number().int().min(0).max(500_000_000).optional(), isActive: z.boolean().optional(),
+    isPremium: z.boolean().optional(), name: z.string().min(2).max(120).optional(), description: z.string().max(600).optional(), icon: z.string().min(1).max(8).optional(),
+  });
   app.patch('/catalog/cluster/:slug', admin, async (request) => {
     const { slug } = request.params as { slug: string };
-    const { priceMonthly } = priceSchema.parse(request.body);
-    return prisma.cluster.update({ where: { slug }, data: { priceMonthly }, select: { slug: true, priceMonthly: true } });
+    const data = clusterPatch.parse(request.body);
+    return prisma.cluster.update({ where: { slug }, data, select: { slug: true, priceMonthly: true, isActive: true, name: true } });
   });
   app.patch('/catalog/bot/:slug', admin, async (request) => {
     const { slug } = request.params as { slug: string };
-    const { priceMonthly } = priceSchema.parse(request.body);
-    return prisma.bot.update({ where: { slug }, data: { priceMonthly }, select: { slug: true, priceMonthly: true } });
+    const data = botPatch.parse(request.body);
+    return prisma.bot.update({ where: { slug }, data, select: { slug: true, priceMonthly: true, isActive: true, name: true } });
   });
   app.post('/catalog/bulk', admin, async (request) => {
     const b = z.object({ kind: z.enum(['CLUSTER', 'BOT']), priceMonthly: z.number().int().min(0).max(500_000_000), onlyUnpriced: z.boolean().optional() }).parse(request.body);
@@ -206,10 +216,73 @@ export async function adminRoutes(app: FastifyInstance) {
     return { updated: r.count };
   });
 
+
+  /* ───── لندینگ‌ها ───── */
+  app.get('/landings', admin, async () => {
+    const [clusters, rows, trials] = await Promise.all([
+      prisma.cluster.findMany({ orderBy: { sortOrder: 'asc' }, select: { slug: true, name: true, icon: true, color: true, isActive: true, priceMonthly: true } }),
+      prisma.landing.findMany(),
+      prisma.entitlement.groupBy({ by: ['refSlug'], where: { source: 'TRIAL', kind: 'CLUSTER' }, _count: { _all: true } }),
+    ]);
+    const rm = new Map(rows.map((r) => [r.slug, r]));
+    const tm = new Map(trials.map((t) => [t.refSlug, t._count._all]));
+    return {
+      items: clusters.map((c) => {
+        const r = rm.get(c.slug);
+        return { ...c, hasLanding: LANDING_SLUGS.includes(c.slug), landingActive: r?.isActive ?? true, trialEnabled: r?.trialEnabled ?? null, trialDays: r?.trialDays ?? null, demoEnabled: r?.demoEnabled ?? null, views: r?.views ?? 0, trials: tm.get(c.slug) ?? 0, customized: !!r && r.content !== '{}' };
+      }),
+    };
+  });
+
+  app.get('/landings/:slug', admin, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const l = await loadLanding(prisma, slug, { includeInactive: true });
+    if (!l) throw bad('خوشه پیدا نشد', 404);
+    const defaults = defaultLanding(slug, l.cluster.name);
+    return { cluster: l.cluster, defaults, content: mergeContent(defaults, l.row?.content), row: l.row };
+  });
+
+  const contentSchema = z.object({
+    pain: z.string().max(200), sub: z.string().max(400), demoHint: z.string().max(300), proof: z.string().max(600), proofWho: z.string().max(120),
+    ctaNote: z.string().max(200), metaTitle: z.string().max(120), metaDesc: z.string().max(300),
+    before: z.array(z.object({ b: z.string().max(240), a: z.string().max(240) })).max(6),
+    demoPrompts: z.array(z.string().max(200)).max(4), audience: z.array(z.string().max(240)).max(6),
+    featured: z.array(z.object({ name: z.string().max(100), desc: z.string().max(240) })).max(4),
+    steps: z.array(z.object({ t: z.string().max(120), d: z.string().max(300) })).max(5),
+  }).partial();
+  app.put('/landings/:slug', admin, async (request) => {
+    const { slug } = request.params as { slug: string };
+    const b = z.object({
+      isActive: z.boolean().optional(), trialEnabled: z.boolean().nullable().optional(), trialDays: z.number().int().min(1).max(365).nullable().optional(),
+      demoEnabled: z.boolean().nullable().optional(), content: contentSchema.optional(), resetContent: z.boolean().optional(),
+    }).parse(request.body);
+    if (!(await prisma.cluster.findUnique({ where: { slug }, select: { id: true } }))) throw bad('خوشه پیدا نشد', 404);
+    const { content, resetContent, ...rest } = b;
+    const data = { ...rest, ...(resetContent ? { content: '{}' } : content ? { content: JSON.stringify(content) } : {}) };
+    const row = await prisma.landing.upsert({ where: { slug }, create: { slug, ...data }, update: data });
+    await prisma.activityLog.create({ data: { type: 'admin.landing', message: `لندینگ ${slug} ویرایش شد`, userId: request.user.sub } });
+    return row;
+  });
+  app.post('/landings/bulk', admin, async (request) => {
+    const b = z.object({ field: z.enum(['isActive', 'trialEnabled', 'demoEnabled']), value: z.boolean() }).parse(request.body);
+    const clusters = await prisma.cluster.findMany({ select: { slug: true } });
+    const patch: { isActive?: boolean; trialEnabled?: boolean; demoEnabled?: boolean } = {};
+    patch[b.field] = b.value;
+    for (const c of clusters) await prisma.landing.upsert({ where: { slug: c.slug }, create: { slug: c.slug, ...patch }, update: patch });
+    return { updated: clusters.length };
+  });
+
   /* ───── تنظیمات ───── */
   app.get('/settings', admin, async () => ({ settings: await getSettings(prisma, true), months: MONTH_CHOICES }));
   app.put('/settings', admin, async (request) => {
-    const b = z.object({ enforcePurchases: z.boolean().optional(), allowFakePayments: z.boolean().optional(), storeName: z.string().min(1).max(60).optional(), announcement: z.string().max(300).optional() }).parse(request.body);
+    const b = z.object({
+      enforcePurchases: z.boolean().optional(), allowFakePayments: z.boolean().optional(),
+      storeName: z.string().min(1).max(60).optional(), announcement: z.string().max(300).optional(),
+      registrationOpen: z.boolean().optional(), trialEnabled: z.boolean().optional(),
+      trialDays: z.number().int().min(1).max(365).optional(), demoEnabled: z.boolean().optional(),
+      demoPerHour: z.number().int().min(1).max(100).optional(), demoDailyCap: z.number().int().min(0).max(100000).optional(),
+      landingsEnabled: z.boolean().optional(), supportLink: z.string().max(200).optional(), disabledModules: z.string().max(500).optional(),
+    }).parse(request.body);
     if (b.allowFakePayments && env.NODE_ENV === 'production' && env.ZARINPAL_MERCHANT_ID) throw bad('با درگاه واقعی فعال، «پرداخت آزمایشی» لازم نیست و روشن نمی‌شود');
     return { settings: await saveSettings(prisma, b) };
   });

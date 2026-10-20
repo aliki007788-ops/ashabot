@@ -29,6 +29,21 @@ export interface PlatformSettings {
   storeName: string;
   /** پیام اطلاع‌رسانی بالای پنل کاربر (اختیاری) */
   announcement: string;
+  /// ثبت‌نام کاربر جدید باز است؟
+  registrationOpen: boolean;
+  /// ماه (دوره) رایگان
+  trialEnabled: boolean;
+  trialDays: number;
+  /// دموی عمومی لندینگ‌ها
+  demoEnabled: boolean;
+  demoPerHour: number;
+  demoDailyCap: number;
+  /// لندینگ‌های عمومی
+  landingsEnabled: boolean;
+  /// لینک پشتیبانی (تلگرام)
+  supportLink: string;
+  /// مسیرهای منوی غیرفعال (با ویرگول)، مثل /crm,/evals
+  disabledModules: string;
 }
 
 export const DEFAULT_SETTINGS: PlatformSettings = {
@@ -36,6 +51,15 @@ export const DEFAULT_SETTINGS: PlatformSettings = {
   allowFakePayments: false,
   storeName: 'آشا',
   announcement: '',
+  registrationOpen: true,
+  trialEnabled: true,
+  trialDays: 30,
+  demoEnabled: true,
+  demoPerHour: 6,
+  demoDailyCap: 300,
+  landingsEnabled: true,
+  supportLink: '',
+  disabledModules: '',
 };
 
 let cache: { at: number; value: PlatformSettings } | null = null;
@@ -49,6 +73,15 @@ export async function getSettings(prisma: PrismaClient, fresh = false): Promise<
     allowFakePayments: map.allowFakePayments === 'true',
     storeName: map.storeName || DEFAULT_SETTINGS.storeName,
     announcement: map.announcement ?? '',
+    registrationOpen: map.registrationOpen !== 'false',
+    trialEnabled: map.trialEnabled !== 'false',
+    trialDays: Math.min(365, Math.max(1, Number(map.trialDays) || DEFAULT_SETTINGS.trialDays)),
+    demoEnabled: map.demoEnabled !== 'false',
+    demoPerHour: Math.min(100, Math.max(1, Number(map.demoPerHour) || DEFAULT_SETTINGS.demoPerHour)),
+    demoDailyCap: Math.min(100000, Math.max(0, map.demoDailyCap === undefined ? DEFAULT_SETTINGS.demoDailyCap : Number(map.demoDailyCap) || 0)),
+    landingsEnabled: map.landingsEnabled !== 'false',
+    supportLink: map.supportLink ?? '',
+    disabledModules: map.disabledModules ?? '',
   };
   cache = { at: Date.now(), value };
   return value;
