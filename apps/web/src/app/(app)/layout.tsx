@@ -9,6 +9,8 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 
 const NAV = [
   { href: '/dashboard', label: 'داشبورد' },
+  { href: '/store', label: '🛒 فروشگاه' },
+  { href: '/account', label: '👤 حساب من' },
   { href: '/clusters', label: 'خوشه‌ها' },
   { href: '/w', label: 'میزکارها' },
   { href: '/runs', label: 'پرونده‌ها' },
@@ -25,9 +27,10 @@ const NAV = [
   { href: '/brains', label: 'مغزها' },
   { href: '/settings', label: 'تنظیمات' },
 ];
+const ADMIN_NAV = { href: '/admin', label: '🛡 مدیریت' };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, logout } = useAuth();
+  const { user, loading, logout, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
@@ -75,7 +78,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
         <nav className="max-w-7xl mx-auto px-6 pb-2 flex gap-1 overflow-x-auto text-sm">
-          {NAV.map((n) => {
+          {(isAdmin ? [ADMIN_NAV, ...NAV] : NAV).map((n) => {
             const active = pathname === n.href || pathname.startsWith(n.href + '/');
             return (
               <Link

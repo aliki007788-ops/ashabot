@@ -22,6 +22,11 @@ const envSchema = z.object({
   FRONTEND_URL: z.string().optional(),
   PUBLIC_API_URL: z.string().optional(),
   RENDER_EXTERNAL_URL: z.string().optional(),
+  /** ایمیل‌های مدیر (با کاما جدا کنید)؛ کاربری که با این ایمیل ثبت‌نام/ورود کند ADMIN می‌شود */
+  ADMIN_EMAILS: z.string().optional(),
+  /** ارسال ایمیل بازیابی رمز با Resend (اختیاری) */
+  RESEND_API_KEY: z.string().optional(),
+  MAIL_FROM: z.string().optional(),
 });
 
 const raw = {

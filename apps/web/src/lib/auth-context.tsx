@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { api, setAccessToken, setOnUnauthorized } from './api';
+import { api, getRefreshToken, setAccessToken, setOnUnauthorized, setSession } from './api';
 
 export type User = {
   id: string;
@@ -18,6 +18,8 @@ type AuthContextType = {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  isAdmin: boolean;
+  refreshUser: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -58,21 +60,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const { data } = await api.post('/api/auth/login', { email, password });
-    setAccessToken(data.accessToken);
+    setSession(data.accessToken, data.refreshToken);
     setUser(data.user);
-    router.push('/dashboard');
+    router.push(data.user?.role === 'ADMIN' ? '/admin' : '/account');
   };
 
   const register = async (name: string, email: string, password: string) => {
     const { data } = await api.post('/api/auth/register', { name, email, password });
-    setAccessToken(data.accessToken);
+    setSession(data.accessToken, data.refreshToken);
     setUser(data.user);
-    router.push('/dashboard');
+    router.push(data.user?.role === 'ADMIN' ? '/admin' : '/onboarding');
   };
 
   const logout = async () => {
     try {
-      await api.post('/api/auth/logout');
+      await api.post('/api/auth/logout', { refreshToken: getRefreshToken() });
     } catch {}
     setAccessToken(null);
     setUser(null);
@@ -80,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, isAdmin: user?.role === 'ADMIN', refreshUser: fetchMe }}>
       {children}
     </AuthContext.Provider>
   );

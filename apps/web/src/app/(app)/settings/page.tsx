@@ -4,12 +4,10 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 
 const SETTINGS_SECTIONS = [
-  { icon: '👤', title: 'پروفایل', desc: 'نام، ایمیل و اطلاعات شخصی', href: '/settings/profile', color: '#6a8dff' },
-  { icon: '💳', title: 'صورتحساب و پلن', desc: 'مدیریت اشتراک و پرداخت‌ها', href: '/settings/billing', color: '#b46eff' },
-  { icon: '👥', title: 'اعضای تیم', desc: 'مدیریت کاربران سازمان', href: '/settings/team', color: '#4ade80' },
-  { icon: '🔑', title: 'کلیدهای API', desc: 'دسترسی برنامه‌نویسی', href: '/settings/api-keys', color: '#f59e0b' },
-  { icon: '🔔', title: 'اعلان‌ها', desc: 'تنظیمات اطلاع‌رسانی', href: '/settings/notifications', color: '#ec4899' },
-  { icon: '🔒', title: 'امنیت', desc: 'رمز عبور و احراز هویت', href: '/settings/security', color: '#ef4444' },
+  { icon: '👤', title: 'پروفایل', desc: 'نام و اطلاعات حساب', href: '/settings/profile', color: '#6a8dff' },
+  { icon: '🔒', title: 'امنیت', desc: 'تغییر رمز عبور', href: '/settings/security', color: '#ef4444' },
+  { icon: '🧾', title: 'سفارش‌ها و فاکتورها', desc: 'خریدها و پرداخت‌های من', href: '/account/orders', color: '#b46eff' },
+  { icon: '🛒', title: 'فروشگاه', desc: 'خرید یا تمدید خوشه و ربات', href: '/store', color: '#4ade80' },
 ];
 
 export default function SettingsPage() {
@@ -28,8 +26,8 @@ export default function SettingsPage() {
             {user?.name?.[0] || 'A'}
           </div>
           <div className="flex-1">
-            <div className="font-bold text-lg">{user?.name || 'Admin'}</div>
-            <div className="text-sm text-white/50" dir="ltr">{user?.email || 'admin@test.com'}</div>
+            <div className="font-bold text-lg">{user?.name}</div>
+            <div className="text-sm text-white/50" dir="ltr">{user?.email}</div>
           </div>
         </div>
       </div>

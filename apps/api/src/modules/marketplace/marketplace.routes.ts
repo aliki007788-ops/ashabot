@@ -1,6 +1,7 @@
 import type { FastifyInstance } from 'fastify';
 import { ci } from '../../lib/dbmode.js';
 import { z } from 'zod';
+import { canUse, deny } from '../../lib/access.js';
 
 /** فروشگاه قالب‌ها: ربات‌های پرمیوم/قالب را برای کاربر نصب (کپی) می‌کند */
 export async function marketplaceRoutes(app: FastifyInstance) {
@@ -20,7 +21,7 @@ export async function marketplaceRoutes(app: FastifyInstance) {
         ] } : {}),
       },
       select: {
-        id: true, name: true, slug: true, icon: true, description: true, isPremium: true, tools: true,
+        id: true, name: true, slug: true, icon: true, description: true, isPremium: true, tools: true, priceMonthly: true,
         cluster: { select: { name: true, slug: true, icon: true, color: true } },
       },
       orderBy: [{ isPremium: 'desc' }, { createdAt: 'desc' }],
@@ -33,6 +34,8 @@ export async function marketplaceRoutes(app: FastifyInstance) {
     const { id } = request.params as { id: string };
     const src = await app.prisma.bot.findUnique({ where: { id }, include: { brains: true } });
     if (!src || src.userId) throw Object.assign(new Error('قالب یافت نشد'), { statusCode: 404 });
+    const access = await canUse(app.prisma, request.user, { botSlug: src.slug });
+    if (!access.ok) throw deny(access.reason ?? 'برای نصب این قالب باید آن را از «فروشگاه» تهیه کنید.');
     const slug = `${src.slug}-${request.user.sub.slice(-6)}-${Date.now().toString(36)}`;
     const bot = await app.prisma.bot.create({
       data: {

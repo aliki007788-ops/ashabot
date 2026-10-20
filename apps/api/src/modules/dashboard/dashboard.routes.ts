@@ -3,7 +3,11 @@ import type { FastifyInstance } from 'fastify';
 export async function dashboardRoutes(app: FastifyInstance) {
   const prisma = app.prisma;
 
-  app.get('/stats', { preHandler: [app.authenticate] }, async () => {
+  app.get('/stats', { preHandler: [app.authenticate] }, async (request) => {
+    // مدیر آمار کل پلتفرم را می‌بیند؛ کاربر عادی فقط آمار خودش را
+    const isAdmin = request.user.role === 'ADMIN';
+    const me = request.user.sub;
+    const cw = isAdmin ? {} : { OR: [{ userId: me }, { bot: { userId: me } }] };
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -37,15 +41,15 @@ export async function dashboardRoutes(app: FastifyInstance) {
       prisma.bot.count({ where: { isPremium: true } }),
       prisma.bot.count({ where: { isPremium: false } }),
       prisma.botBrain.count(),
-      prisma.conversation.count(),
-      prisma.conversation.count({ where: { createdAt: { gte: today } } }),
-      prisma.message.count(),
-      prisma.message.count({ where: { createdAt: { gte: today } } }),
-      prisma.user.count(),
-      prisma.organization.count(),
-      prisma.plan.count(),
-      prisma.subscription.count(),
-      prisma.apiKey.count(),
+      prisma.conversation.count({ where: cw }),
+      prisma.conversation.count({ where: { ...cw, createdAt: { gte: today } } }),
+      prisma.message.count({ where: { conversation: cw } }),
+      prisma.message.count({ where: { conversation: cw, createdAt: { gte: today } } }),
+      isAdmin ? prisma.user.count() : Promise.resolve(1),
+      isAdmin ? prisma.organization.count() : Promise.resolve(0),
+      isAdmin ? prisma.plan.count() : Promise.resolve(0),
+      isAdmin ? prisma.subscription.count() : Promise.resolve(0),
+      isAdmin ? prisma.apiKey.count() : Promise.resolve(0),
       // Channels stats
       prisma.channel.count(),
       prisma.channel.count({ where: { isActive: true } }),
@@ -54,6 +58,7 @@ export async function dashboardRoutes(app: FastifyInstance) {
         where: { type: { in: ['EITAA', 'BALE', 'RUBIKA', 'SOROUSH', 'GAP'] } },
       }),
       prisma.activityLog.findMany({
+        where: isAdmin ? {} : { userId: me },
         orderBy: { createdAt: 'desc' },
         take: 10,
         include: {

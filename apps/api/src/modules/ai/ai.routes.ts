@@ -3,6 +3,7 @@ import { AiService } from './ai.service.js';
 import { ConversationService } from './conversation.service.js';
 import { chatSchema, listConversationsSchema } from './ai.schema.js';
 import { z } from 'zod';
+import { canUse, deny } from '../../lib/access.js';
 
 // Schema برای WebChat (بدون userId)
 const webchatSchema = z.object({
@@ -66,8 +67,16 @@ export async function aiRoutes(app: FastifyInstance) {
 
   // ==================== PROTECTED ENDPOINTS ====================
 
+  async function guard(request: any, botId: string): Promise<void> {
+    const bot = await app.prisma.bot.findUnique({ where: { id: botId }, select: { slug: true } });
+    if (!bot) return;
+    const access = await canUse(app.prisma, request.user, { botSlug: bot.slug });
+    if (!access.ok) throw deny(access.reason ?? 'دسترسی ندارید');
+  }
+
   app.post('/chat', { preHandler: [app.authenticate] }, async (request) => {
     const input = chatSchema.parse(request.body);
+    await guard(request, input.botId);
     return service.chat({
       ...input,
       userId: request.user.sub,
@@ -76,6 +85,7 @@ export async function aiRoutes(app: FastifyInstance) {
 
   app.post('/chat/stream', { preHandler: [app.authenticate] }, async (request, reply) => {
     const input = chatSchema.parse(request.body);
+    await guard(request, input.botId);
 
     const origin = request.headers.origin;
     if (origin) {
@@ -104,7 +114,15 @@ export async function aiRoutes(app: FastifyInstance) {
 
   app.get('/conversations', { preHandler: [app.authenticate] }, async (request) => {
     const { botId, limit } = listConversationsSchema.parse(request.query);
-    const items = await conversations.listByBot(botId, limit);
+    // فقط مالک ربات (یا مدیر) همه‌ی گفتگوها را می‌بیند؛ بقیه فقط گفتگوهای خودشان
+    const bot = await app.prisma.bot.findUnique({ where: { id: botId }, select: { userId: true } });
+    const full = request.user.role === 'ADMIN' || (!!bot?.userId && bot.userId === request.user.sub);
+    const items = await app.prisma.conversation.findMany({
+      where: { botId, ...(full ? {} : { userId: request.user.sub }) },
+      orderBy: { updatedAt: 'desc' },
+      take: limit,
+      include: { _count: { select: { messages: true } } },
+    });
     return { items };
   });
 
@@ -113,6 +131,10 @@ export async function aiRoutes(app: FastifyInstance) {
     const conversation = await conversations.getDetail(id);
     if (!conversation) {
       throw Object.assign(new Error('Conversation not found'), { statusCode: 404 });
+    }
+    if (request.user.role !== 'ADMIN' && conversation.userId !== request.user.sub) {
+      const owner = await app.prisma.bot.findUnique({ where: { id: conversation.botId }, select: { userId: true } });
+      if (!owner?.userId || owner.userId !== request.user.sub) throw Object.assign(new Error('Conversation not found'), { statusCode: 404 });
     }
     return conversation;
   });
